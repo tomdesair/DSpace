@@ -9,6 +9,7 @@ package org.dspace.content;
 
 import java.sql.SQLException;
 
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
@@ -161,6 +162,8 @@ public abstract class DSpaceObject
     {
         return null;
     }
+
+    public abstract void update() throws SQLException, AuthorizeException;
 
     public abstract void updateLastModified();
 }
