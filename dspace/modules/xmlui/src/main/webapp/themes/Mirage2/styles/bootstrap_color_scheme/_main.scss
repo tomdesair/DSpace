@@ -1,8 +1,8 @@
 @import "compass";
 @function twbs-font-path($font-name) {
-    @return "../vendor/bootstrap-sass-official/vendor/assets/fonts/" + $font-name
+    @return "../vendor/bootstrap-sass-official/assets/fonts/" + $font-name
 }
-@import "../vendor/bootstrap-sass-official/vendor/assets/stylesheets/bootstrap";
+@import "../vendor/bootstrap-sass-official/assets/stylesheets/bootstrap/bootstrap";
 @import "shared/dspace-bootstrap-tweaks";
 @import "shared/jquery-ui-1.10.3.custom.css";
 @import "style";
