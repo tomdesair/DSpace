@@ -11,10 +11,17 @@ All these extra dependencies made us reconsider the way front-end dependencies w
 These new technologies are put in place to make it easier for the theme developer to produce great themes, but they come with a few new dependencies: node js and ruby. In order to make it easier to get started customizing Mirage2 we added a way to install them automatically durng a maven build.
 
 # Installation #
+
+Mirage 2 has been integrated into the standard maven build as an optional feature. It has to be explicitly enabled by setting the `xmlui.mirage.2` to `true`.
+
+```bash
+    mvn package -Dxmlui.mirage.2=true
+```
+
 All extra tools in the Mirage 2 build process run on either Node js or Ruby, so you'll need both to be able to build the theme. By default, the maven build will assume you don't have either installed and install them in a temporary sandbox every time you build the project. That's convenient, but also quite a bit slower than installing them natively. So we recommend you only use that feature to try out the theme. Afterwards, install the prerequisites and build DSpace with the `mirage2.deps.included` property set to `false`:
 
 ```bash
-    mvn package -Dmirage2.deps.included=false
+    mvn package -Dxmlui.mirage.2=true -Dmirage2.deps.included=false
 ```
 
 ## Prerequisites for OSX / Linux ##
