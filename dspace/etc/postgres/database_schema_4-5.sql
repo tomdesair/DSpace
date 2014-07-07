@@ -1,7 +1,8 @@
 alter table metadatavalue rename item_id to resource_id;
 alter table metadatavalue alter column resource_id set not null;
-alter table metadatavalue add column resource_type_id integer not null;
+alter table metadatavalue add column resource_type_id integer;
 UPDATE metadatavalue SET resource_type_id = 2;
+alter table metadatavalue alter column resource_type_id set not null;
 alter table metadatavalue drop constraint metadatavalue_item_id_fkey;
 
 
