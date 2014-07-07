@@ -2,6 +2,7 @@ alter table metadatavalue rename item_id to resource_id;
 alter table metadatavalue alter column resource_id set not null;
 alter table metadatavalue add column resource_type_id integer not null;
 UPDATE metadatavalue SET resource_type_id = 2;
+alter table metadatavalue drop constraint metadatavalue_item_id_fkey;
 
 
 -- ---------
@@ -143,8 +144,6 @@ alter table collection drop column introductory_text, drop column short_descript
 -- ---------
 -- bundle
 -- ---------
-
-alter table metadatavalue drop constraint metadatavalue_item_id_fkey;
 
 INSERT INTO metadatavalue (resource_id, resource_type_id, metadata_field_id, text_value, text_lang, place)
 SELECT
