@@ -219,7 +219,7 @@ The goal of the standard Bootstrap color scheme was to add as little extra style
 
 The classic Mirage color scheme contains more modifications and also overwrites a few bootstrap variables, in the file `classic_mirage_color_scheme/_bootstrap_variables.scss`. Variables are important because they allow you to change the look of the theme dramatically, simply by changing a few color codes or the font-family. Try to change the value of `$brand-primary` to see what we mean.
 
-Take a look at [bootstrap's own variables file](https://github.com/twbs/bootstrap-sass/blob/master/vendor/assets/stylesheets/bootstrap/_variables.scss) to see which others you can overwrite.
+Take a look at [bootstrap's own variables file](https://github.com/twbs/bootstrap-sass/blob/master/assets/stylesheets/bootstrap/_variables.scss) to see which others you can overwrite.
 
 If you want to base your theme on an existing Bootstrap theme (like the ones at [bootswatch.com](http://bootswatch.com)) you can do so by using the standard Bootstrap color scheme and replacing the import of Bootstrap in `bootstrap_color_scheme/_main.scss`:
 
