@@ -875,20 +875,6 @@
     </xsl:template>
 
 
-
-
-    <!-- The block of templates used to render the complete DIM contents of a DRI object -->
-    <xsl:template match="dim:dim" mode="itemDetailView-DIM">
-        <table class="ds-includeSet-table">
-            <xsl:apply-templates mode="itemDetailView-DIM"/>
-        </table>
-        <span class="Z3988">
-            <xsl:attribute name="title">
-                <xsl:call-template name="renderCOinS"/>
-            </xsl:attribute>
-        </span>
-    </xsl:template>
-
     <xsl:template match="dim:field" mode="itemDetailView-DIM">
         <tr>
             <xsl:attribute name="class">
