@@ -215,7 +215,7 @@ public class CollectionTest extends AbstractDSpaceObjectTest
     }
 
     /**
-     * Test of getMetadata method, of class Collection.
+     * Test of getMetadataByMetadataString method, of class Collection.
      */
     @Test
     public void testGetMetadata()

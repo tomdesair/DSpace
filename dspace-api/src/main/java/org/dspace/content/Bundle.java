@@ -42,17 +42,11 @@ public class Bundle extends DSpaceObject
     /** log4j logger */
     private static Logger log = Logger.getLogger(Bundle.class);
 
-    /** Our context */
-    private Context ourContext;
-
     /** The table row corresponding to this bundle */
     private TableRow bundleRow;
 
     /** The bitstreams in this bundle */
     private List<Bitstream> bitstreams;
-
-    /** Flag set when data is modified, for events */
-    private boolean modified;
 
     /** Flag set when metadata is modified, for events */
     private boolean modifiedMetadata;
@@ -67,6 +61,7 @@ public class Bundle extends DSpaceObject
      */
     Bundle(Context context, TableRow row) throws SQLException
     {
+        super();
         ourContext = context;
         bundleRow = row;
         bitstreams = new ArrayList<Bitstream>();

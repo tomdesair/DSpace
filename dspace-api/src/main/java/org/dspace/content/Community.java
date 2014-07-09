@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.StringTokenizer;
 
 /**
  * Class representing a community
@@ -49,9 +50,6 @@ public class Community extends DSpaceObject
     /** log4j category */
     private static Logger log = Logger.getLogger(Community.class);
 
-    /** Our context */
-    private Context ourContext;
-
     /** The table row corresponding to this item */
     private TableRow communityRow;
 
@@ -60,9 +58,6 @@ public class Community extends DSpaceObject
 
     /** Handle, if any */
     private String handle;
-
-    /** Flag set when data is modified, for events */
-    private boolean modified;
 
     /** Flag set when metadata is modified, for events */
     private boolean modifiedMetadata;
@@ -86,6 +81,7 @@ public class Community extends DSpaceObject
      */
     Community(Context context, TableRow row) throws SQLException
     {
+        super();
         ourContext = context;
         communityRow = row;
 
@@ -390,10 +386,15 @@ public class Community extends DSpaceObject
      * @exception IllegalArgumentException
      *                if the requested metadata field doesn't exist
      */
+    @Deprecated
     public String getMetadata(String field)
     {
-    	String metadata = communityRow.getStringColumn(field);
-    	return (metadata == null) ? "" : metadata;
+        String[] MDValue = getMDValueByLegacyField(field);
+        DCValue[] dcvalues = getMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
     }
 
     /**
@@ -408,37 +409,14 @@ public class Community extends DSpaceObject
      *                if the requested metadata field doesn't exist
      * @exception MissingResourceException
      */
-    public void setMetadata(String field, String value)throws MissingResourceException
-    {
-        if ((field.trim()).equals("name") 
-                && (value == null || value.trim().equals("")))
-        {
-            try
-            {
-                value = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
-            }
-            catch (MissingResourceException e)
-            {
-                value = "Untitled";
-            }
-        }
-        
-        /* 
-         * Set metadata field to null if null 
-         * and trim strings to eliminate excess
-         * whitespace.
-         */
-        if(value == null)
-        {
-            communityRow.setColumnNull(field);
-        }
-        else
-        {
-            communityRow.setColumn(field, value.trim());
-        }
-        
-        modifiedMetadata = true;
-        addDetails(field);
+    @Deprecated
+    public void setMetadata(String field, String value) throws MissingResourceException, SQLException, AuthorizeException {
+        String[] MDValue = getMDValueByLegacyField(field);
+
+        clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
+        addMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+        update();
+        updateMetadata();
     }
 
     public String getName()
@@ -1149,6 +1127,9 @@ public class Community extends DSpaceObject
 
         // Remove all authorization policies
         AuthorizeManager.removeAllPolicies(ourContext, this);
+
+        // Delete the Dublin Core
+        removeMetadataFromDatabase();
 
         // get rid of the content count cache if it exists
         try

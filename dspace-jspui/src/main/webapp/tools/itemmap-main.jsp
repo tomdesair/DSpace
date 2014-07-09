@@ -57,7 +57,7 @@
     <%-- <h2>Item Mapper - Map Items from Other Collections</h2> --%>
 	<h1><fmt:message key="jsp.tools.itemmap-main.heading"/></h1>
 
-    <%--  <p>Collection: "<%=collection.getMetadata("name")%>"</p> --%>
+    <%--  <p>Collection: "<%=collection.getMetadataByMetadataString("name")%>"</p> --%>
     <h2><fmt:message key="jsp.tools.itemmap-main.collection">
         <fmt:param><%=collection.getMetadata("name")%></fmt:param>
     </fmt:message></h2>
@@ -109,7 +109,7 @@
         if( myID != collection.getID() )  // leave out this collection!
         {   %>
         <option value="<%= all_collections[i].getID()%>">
-        <%= all_collections[i].getMetadata("name")%>
+        <%= all_collections[i].getMetadataByMetadataString("name")%>
         </option>
     <%  }
     } %>

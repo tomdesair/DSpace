@@ -39,7 +39,7 @@
         <fmt:param><%= collection.getID() %></fmt:param>
     </fmt:message></h1>
     
-    <%-- <p>Are you sure the collection <strong><%= collection.getMetadata("name") %></strong>
+    <%-- <p>Are you sure the collection <strong><%= collection.getMetadataByMetadataString("name") %></strong>
     should be deleted?  This will delete:</p> --%>
     <p><fmt:message key="jsp.tools.confirm-delete-collection.confirm">
         <fmt:param><%= collection.getMetadata("name") %></fmt:param>

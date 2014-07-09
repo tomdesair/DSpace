@@ -57,9 +57,6 @@ public class Collection extends DSpaceObject
     /** log4j category */
     private static Logger log = Logger.getLogger(Collection.class);
 
-    /** Our context */
-    private Context ourContext;
-
     /** The table row corresponding to this item */
     private TableRow collectionRow;
 
@@ -71,9 +68,6 @@ public class Collection extends DSpaceObject
 
     /** Our Handle */
     private String handle;
-
-    /** Flag set when data is modified, for events */
-    private boolean modified;
 
     /** Flag set when metadata is modified, for events */
     private boolean modifiedMetadata;
@@ -108,6 +102,7 @@ public class Collection extends DSpaceObject
      */
     Collection(Context context, TableRow row) throws SQLException
     {
+        super();
         ourContext = context;
         collectionRow = row;
 
@@ -485,10 +480,15 @@ public class Collection extends DSpaceObject
      * @exception IllegalArgumentException
      *                if the requested metadata field doesn't exist
      */
+    @Deprecated
     public String getMetadata(String field)
     {
-    	String metadata = collectionRow.getStringColumn(field);
-    	return (metadata == null) ? "" : metadata;
+        String[] MDValue = getMDValueByLegacyField(field);
+        DCValue[] dcvalues = getMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
     }
 
     /**
@@ -503,37 +503,13 @@ public class Collection extends DSpaceObject
      *                if the requested metadata field doesn't exist
      * @exception MissingResourceException
      */
-    public void setMetadata(String field, String value) throws MissingResourceException
-    {
-        if ((field.trim()).equals("name")
-                && (value == null || value.trim().equals("")))
-        {
-            try
-            {
-                value = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
-            }
-            catch (MissingResourceException e)
-            {
-                value = "Untitled";
-            }
-        }
+    public void setMetadata(String field, String value) throws MissingResourceException, SQLException, AuthorizeException {
+        String[] MDValue = getMDValueByLegacyField(field);
 
-        /*
-         * Set metadata field to null if null
-         * and trim strings to eliminate excess
-         * whitespace.
-         */
-		if(value == null)
-        {
-            collectionRow.setColumnNull(field);
-        }
-        else
-        {
-            collectionRow.setColumn(field, value.trim());
-        }
-
-        modifiedMetadata = true;
-        addDetails(field);
+        clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
+        addMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+        update();
+        updateMetadata();
     }
 
     public String getName()
@@ -892,8 +868,7 @@ public class Collection extends DSpaceObject
      * @param license
      *            the license, or <code>null</code>
      */
-    public void setLicense(String license)
-    {
+    public void setLicense(String license) throws SQLException, AuthorizeException {
         setMetadata("license",license);
     }
 

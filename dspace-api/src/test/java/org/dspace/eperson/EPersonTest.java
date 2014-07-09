@@ -599,17 +599,17 @@ public class EPersonTest
 */
 
     /**
-     * Test of getMetadata method, of class EPerson.
+     * Test of getMetadataByMetadataString method, of class EPerson.
      */
 /*
     @Test
     public void testGetMetadata()
     {
-        System.out.println("getMetadata");
+        System.out.println("getMetadataByMetadataString");
         String field = "";
         EPerson instance = null;
         String expResult = "";
-        String result = instance.getMetadata(field);
+        String result = instance.getMetadataByMetadataString(field);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

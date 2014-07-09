@@ -60,7 +60,7 @@ public class PackageUtils
     // to initialize hash tables that convert to and from.
     private static final String ccMetadataMap[] =
     {
-        // getMetadata()  ->  DC element.term
+        // getMetadataByMetadataString()  ->  DC element.term
         "name",                    "dc.title",
         "introductory_text",       "dc.description",
         "short_description",       "dc.description.abstract",

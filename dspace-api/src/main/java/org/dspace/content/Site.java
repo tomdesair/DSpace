@@ -22,6 +22,7 @@ import org.dspace.handle.HandleManager;
  */
 public class Site extends DSpaceObject
 {
+
     /** "database" identifier of the site */
     public static final int SITE_ID = 0;
 
@@ -29,6 +30,14 @@ public class Site extends DSpaceObject
     private static String handle = null;
 
     private static Site theSite = null;
+
+    /**
+     * Construct a DSpaceOBject with the given table row
+     *
+     * @throws java.sql.SQLException
+     */
+    protected Site() throws SQLException {
+    }
 
     /**
      * Get the type of this object, found in Constants
@@ -93,6 +102,8 @@ public class Site extends DSpaceObject
     void delete()
         throws SQLException, AuthorizeException, IOException
     {
+        // Delete the Dublin Core
+        removeMetadataFromDatabase();
     }
 
     public void update()

@@ -328,7 +328,7 @@ public class CommunityTest extends AbstractDSpaceObjectTest
     }
 
     /**
-     * Test of getMetadata method, of class Community.
+     * Test of getMetadataByMetadataString method, of class Community.
      */
     @Test
     public void testGetMetadata()

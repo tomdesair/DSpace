@@ -7,6 +7,7 @@
  */
 package org.dspace.browse;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -283,8 +284,7 @@ public class SolrBrowseDAO implements BrowseDAO
     }
 
     @Override
-    public List doQuery() throws BrowseException
-    {
+    public List doQuery() throws BrowseException {
         DiscoverResult resp = getSolrResponse();
 
         List<BrowseItem> bitems = new ArrayList<BrowseItem>();

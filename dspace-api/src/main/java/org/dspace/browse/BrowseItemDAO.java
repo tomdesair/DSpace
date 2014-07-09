@@ -27,7 +27,7 @@ public interface BrowseItemDAO
      * the passed parameters.  In general you should use:
      *
      * <code>
-     * getMetadata(schema, element, qualifier, lang);
+     * getMetadataByMetadataString(schema, element, qualifier, lang);
      * </code>
      *
      * As this will obtain the value from cache if available first.

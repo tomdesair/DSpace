@@ -45,7 +45,7 @@
     <%-- <p>Are you sure you want to abort this workflow?  It will return to the user's personal workspace</p> --%>
     <p><fmt:message key="jsp.dspace-admin.workflow-abort-confirm.warning"/></p>
     	<div class="row">
-        <%-- <li>Collection: <%= workflow.getCollection().getMetadata("name") %></li> --%>
+        <%-- <li>Collection: <%= workflow.getCollection().getMetadataByMetadataString("name") %></li> --%>
         <span class="col-md-4"><fmt:message key="jsp.dspace-admin.workflow-abort-confirm.collection">
             <fmt:param><%= workflow.getCollection().getMetadata("name") %></fmt:param>
         </fmt:message></span>

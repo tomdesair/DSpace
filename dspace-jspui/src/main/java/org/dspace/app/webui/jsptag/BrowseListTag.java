@@ -625,10 +625,6 @@ public class BrowseListTag extends TagSupport
         {
             throw new JspException(ie);
         }
-        catch (SQLException e)
-        {
-        	throw new JspException(e);
-        }
         catch (BrowseException e)
         {
         	throw new JspException(e);
