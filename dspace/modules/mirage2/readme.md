@@ -136,12 +136,12 @@ Make sure its environment variables are set in system variables
 
 Open computer properties:
 
-![Step 1](images/documentation/sysvars1.png)
+![Step 1](documentation/sysvars1.png)
 
 
 Open "advanced sytem settings". Open "Advanced" tab, and click "environment variables":
 
-![Step 2](images/documentation/sysvars2.png)
+![Step 2](documentation/sysvars2.png)
 
 
 
@@ -255,4 +255,4 @@ The theme also comes with built in support for [CoffeeScript](http://coffeescrip
 
 Mirage 2’s dependencies are specified in the file `Mirage2/bower.json`. Dependencies in this file should be specified according to the rules in the [Bower documentation](http://bower.io/|). Note that Bower only downloads the dependencies, nothing more. So if you add other dependencies, you'll still have to reference them. That means if it’s a CSS file, import it in `Mirage2/styles/_style.scss`, if it's a javascript file, add it to `Mirage2/scripts.xml`.
 
-We've used the the `latest` keyword to specify dependency versions in `bower.json` wherever possible because that ensures you're starting with up to date versions when creating a new theme. However once your theme is going in to production, we recommend replacing `latest` with the actual version numbers being used at that moment. That way your production build won't break when a version of a dependency is released that isn't backwards compatible.
+We've used the the `latest` keyword to specify dependency versions in `bower.json` wherever possible because that ensures you're starting with up to date versions when creating a new theme. However once your theme is going in to production, we stronly recommend replacing `latest` with the actual version numbers being used at that moment. That way your production build won't break when a version of a dependency is released that isn't backwards compatible.
