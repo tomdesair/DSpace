@@ -116,8 +116,8 @@ public class Item extends DSpaceObject
     private TableRowIterator retrieveMetadata() throws SQLException
     {
         return DatabaseManager.queryTable(ourContext, "MetadataValue",
-                "SELECT * FROM MetadataValue WHERE item_id= ? ORDER BY metadata_field_id, place",
-                itemRow.getIntColumn("item_id"));
+                "SELECT * FROM MetadataValue WHERE resource_id= ? ORDER BY metadata_field_id, place",
+                itemRow.getIntColumn("resource_id"));
     }
 
     /**

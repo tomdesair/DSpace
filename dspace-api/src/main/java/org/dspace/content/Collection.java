@@ -293,10 +293,20 @@ public class Collection extends DSpaceObject
      * @return the collections in the system
      * @throws SQLException
      */
-    public static Collection[] findAll(Context context) throws SQLException
-    {
-        TableRowIterator tri = DatabaseManager.queryTable(context, "collection",
-                "SELECT * FROM collection ORDER BY name");
+    public static Collection[] findAll(Context context) throws SQLException {
+        TableRowIterator tri = null;
+        try {
+            tri = DatabaseManager.queryTable(context, "collection",
+                    "SELECT * FROM collection c " +
+                            "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                            "ORDER BY m.text_value",
+                    Constants.COLLECTION,
+                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID()
+            );
+        } catch (SQLException e) {
+            log.error("Find all Collections - ",e);
+            throw e;
+        }
 
         List<Collection> collections = new ArrayList<Collection>();
 
@@ -345,9 +355,21 @@ public class Collection extends DSpaceObject
      */
     public static Collection[] findAll(Context context, Integer limit, Integer offset) throws SQLException
     {
-        TableRowIterator tri = DatabaseManager.queryTable(context, "collection",
-                "SELECT * FROM collection ORDER BY name limit ? offset ?", limit, offset);
-
+        TableRowIterator tri = null;
+        try{
+            tri = DatabaseManager.queryTable(context, "collection",
+                    "SELECT * FROM collection c " +
+                            "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                            "ORDER BY m.text_value limit ? offset ?",
+                    Constants.COLLECTION,
+                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID(),
+                    limit,
+                    offset
+            );
+        } catch (SQLException e) {
+            log.error("Find all Collections offset/limit - ",e);
+            throw e;
+        }
         List<Collection> collections = new ArrayList<Collection>();
 
         try

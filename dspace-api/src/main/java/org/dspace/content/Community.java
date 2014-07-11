@@ -30,10 +30,7 @@ import org.dspace.storage.rdbms.TableRowIterator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Class representing a community
@@ -254,8 +251,19 @@ public class Community extends DSpaceObject
      */
     public static Community[] findAll(Context context) throws SQLException
     {
-        TableRowIterator tri = DatabaseManager.queryTable(context, "community",
-                "SELECT * FROM community ORDER BY name");
+        TableRowIterator tri = null;
+        try {
+            tri = DatabaseManager.queryTable(context, "community",
+                    "SELECT * FROM community c " +
+                            "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                            "ORDER BY m.text_value",
+                    Constants.COMMUNITY,
+                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID()
+            );
+        } catch (SQLException e) {
+            log.error("Find all Communities - ",e);
+            throw e;
+        }
 
         List<Community> communities = new ArrayList<Community>();
 
@@ -307,10 +315,20 @@ public class Community extends DSpaceObject
     public static Community[] findAllTop(Context context) throws SQLException
     {
         // get all communities that are not children
-        TableRowIterator tri = DatabaseManager.queryTable(context, "community",
-                "SELECT * FROM community WHERE NOT community_id IN "
-                        + "(SELECT child_comm_id FROM community2community) "
-                        + "ORDER BY name");
+        TableRowIterator tri = null;
+        try {
+            tri = DatabaseManager.queryTable(context, "community",
+                    "SELECT c.* FROM community c  "
+                            + "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
+                            + "WHERE NOT c.community_id IN (SELECT child_comm_id FROM community2community) "
+                            + "ORDER BY m.text_value",
+                    Constants.COMMUNITY,
+                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID()
+            );
+        } catch (SQLException e) {
+            log.error("Find all Top Communities - ",e);
+            throw e;
+        }
 
         List<Community> topCommunities = new ArrayList<Community>();
 
@@ -601,12 +619,22 @@ public class Community extends DSpaceObject
         List<Collection> collections = new ArrayList<Collection>();
 
         // Get the table rows
-        TableRowIterator tri = DatabaseManager.queryTable(
-        	ourContext,"collection",
-            "SELECT collection.* FROM collection, community2collection WHERE " +
-            "community2collection.collection_id=collection.collection_id " +
-            "AND community2collection.community_id= ? ORDER BY collection.name",
-            getID());
+        TableRowIterator tri = null;
+        try {
+            tri = DatabaseManager.queryTable(
+                    ourContext, "collection",
+                    "SELECT c.* FROM community2collection c2c, collection c "
+                            + "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
+                            + "WHERE c2c.collection_id=c.collection_id AND c2c.community_id=? "
+                            + "ORDER BY m.text_value",
+                    Constants.COLLECTION,
+                    MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "title", null).getFieldID(),
+                    getID()
+            );
+        } catch (SQLException e) {
+            log.error("Find all Collections for this community - ",e);
+            throw e;
+        }
 
         // Make Collection objects
         try
@@ -657,13 +685,24 @@ public class Community extends DSpaceObject
         List<Community> subcommunities = new ArrayList<Community>();
 
         // Get the table rows
-        TableRowIterator tri = DatabaseManager.queryTable(
-                ourContext,"community",
-                "SELECT community.* FROM community, community2community WHERE " +
-                "community2community.child_comm_id=community.community_id " + 
-                "AND community2community.parent_comm_id= ? ORDER BY community.name",
-                getID());
-        
+        TableRowIterator tri = null;
+        try {
+            tri = DatabaseManager.queryTable(
+                    ourContext, "community",
+                    "SELECT c.* FROM community2community c2c, community c " +
+                            "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                            "WHERE c2c.child_comm_id=c.community_id " +
+                            "AND c2c.parent_comm_id= ? " +
+                            "ORDER BY m.text_value",
+                    Constants.COMMUNITY,
+                    MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "title", null).getFieldID(),
+                    getID()
+            );
+        } catch (SQLException e) {
+            log.error("Find all Sub Communities - ",e);
+            throw e;
+        }
+
 
         // Make Community objects
         try

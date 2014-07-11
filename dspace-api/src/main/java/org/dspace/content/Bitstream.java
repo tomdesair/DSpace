@@ -292,9 +292,20 @@ public class Bitstream extends DSpaceObject
      * 
      * @return the name of the bitstream
      */
-    public String getName()
-    {
-        return bRow.getStringColumn("name");
+    public String getName(){
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata("dc", "title", null, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+       return null;
+        /* try {
+            int metadataFieldId = MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "title", null).getFieldID();
+            return getValueByColumn(metadataFieldId);
+        } catch (SQLException e) {
+            log.error("SQL Bitstream getName - ", e);
+        }
+        return null;*/
     }
 
     /**
@@ -303,11 +314,18 @@ public class Bitstream extends DSpaceObject
      * @param n
      *            the new name of the bitstream
      */
-    public void setName(String n)
-    {
-        bRow.setColumn("name", n);
+    public void setName(String n) throws AuthorizeException {
+        try{
+            clearMetadata("dc", "title", null, Item.ANY);
+            addMetadata("dc", "title", null, Item.ANY, n);
+            update();
+            updateMetadata();
+        } catch (SQLException e) {
+            log.error("SQL set Title - ", e);
+        }
+/*        bRow.setColumn("name", n);
         modifiedMetadata = true;
-        addDetails("Name");
+        addDetails("Name");*/
     }
 
     /**
@@ -319,7 +337,20 @@ public class Bitstream extends DSpaceObject
      */
     public String getSource()
     {
-        return bRow.getStringColumn("source");
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata("dc", "source", null, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
+
+        /*try {
+            int metadataFieldId = MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "source", null).getFieldID();
+            return getValueByColumn(metadataFieldId);
+        } catch (SQLException e) {
+            log.error("SQL Bitstream getSource - ", e);
+        }
+        return null;*/
     }
 
     /**
@@ -328,11 +359,18 @@ public class Bitstream extends DSpaceObject
      * @param n
      *            the new source of the bitstream
      */
-    public void setSource(String n)
-    {
-        bRow.setColumn("source", n);
+    public void setSource(String n) throws AuthorizeException {
+        try{
+            clearMetadata("dc", "source", null, Item.ANY);
+            addMetadata("dc", "source", null, Item.ANY, n);
+            update();
+            updateMetadata();
+        } catch (SQLException e) {
+            log.error("SQL set Source - ", e);
+        }
+ /*       bRow.setColumn("source", n);
         modifiedMetadata = true;
-        addDetails("Source");
+        addDetails("Source");*/
     }
 
     /**
@@ -343,7 +381,62 @@ public class Bitstream extends DSpaceObject
      */
     public String getDescription()
     {
-        return bRow.getStringColumn("description");
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata("dc", "description", null, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
+/*        try {
+            int metadataFieldId = MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "description", null).getFieldID();
+            return getValueByColumn(metadataFieldId);
+        } catch (SQLException e) {
+            log.error("SQL Bitstream getDescription - ", e);
+        }
+        return null;*/
+    }
+
+
+    /**
+     * Get the description of this bitstream - optional free text, typically
+     * provided by a user at submission time
+     *
+     * @return the description of the bitstream
+     */
+    //TODO moet deze dan nog blijven ?
+    private String getValueByColumn(int metadataFieldId) throws SQLException {
+
+        TableRowIterator tri = null;
+        tri = DatabaseManager.queryTable(
+                ourContext,"bitstream",
+                "SELECT * FROM bitstream " +
+                        "JOIN metadatavalue m on (m.resource_id = bitstream.bitstream_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                        "WHERE bitstream_id = ?",
+                Constants.BITSTREAM,
+                metadataFieldId,
+                getID()
+        );
+
+        List<TableRow> bitstreams = new ArrayList<TableRow>();
+
+        try
+        {
+            while (tri.hasNext())
+            {
+                return tri.next().toString();//TODO : mag dit op deze manier om enkel de 1e terug te geveen ?
+            }
+        } catch (SQLException e) {
+            log.error("SQL Bitstream getName next result - ",e);
+        } finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+            {
+                tri.close();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -352,11 +445,18 @@ public class Bitstream extends DSpaceObject
      * @param n
      *            the new description of the bitstream
      */
-    public void setDescription(String n)
-    {
-        bRow.setColumn("description", n);
+    public void setDescription(String n) throws AuthorizeException {
+        try {
+            clearMetadata("dc", "description", null, Item.ANY);
+            addMetadata("dc", "description", null, Item.ANY, n);
+            update();
+            updateMetadata();
+        } catch (SQLException e) {
+            log.error("SQL set Description - ", e);
+        }
+/*        bRow.setColumn("description", n);
         modifiedMetadata = true;
-        addDetails("Description");
+        addDetails("Description");*/
     }
 
     /**
@@ -397,14 +497,22 @@ public class Bitstream extends DSpaceObject
      *            the user's description of the format
      * @throws SQLException
      */
-    public void setUserFormatDescription(String desc) throws SQLException
-    {
-        // FIXME: Would be better if this didn't throw an SQLException,
+    public void setUserFormatDescription(String desc) throws AuthorizeException {
+        try{
+            clearMetadata("dc", "format", null, Item.ANY);
+            addMetadata("dc", "format", null, Item.ANY, desc);
+            update();
+            updateMetadata();
+        } catch (SQLException e) {
+            log.error("SQL set UserFormatDescription - ", e);
+        }
+
+/*        // FIXME: Would be better if this didn't throw an SQLException,
         // but we need to find the unknown format!
         setFormat(null);
         bRow.setColumn("user_format_description", desc);
         modifiedMetadata = true;
-        addDetails("UserFormatDescription");
+        addDetails("UserFormatDescription");*/
     }
 
     /**
@@ -415,7 +523,19 @@ public class Bitstream extends DSpaceObject
      */
     public String getUserFormatDescription()
     {
-        return bRow.getStringColumn("user_format_description");
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata("dc", "format", null, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
+        /*try {
+            int metadataFieldId = MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "format", null).getFieldID();
+            return getValueByColumn(metadataFieldId);
+        } catch (SQLException e) {
+            log.error("SQL Bitstream getFormatDescription - ", e);
+        }
+        return null;*/
     }
 
     /**
@@ -429,7 +549,7 @@ public class Bitstream extends DSpaceObject
         if (bitstreamFormat.getShortDescription().equals("Unknown"))
         {
             // Get user description if there is one
-            String desc = bRow.getStringColumn("user_format_description");
+            String desc = getUserFormatDescription();
 
             if (desc == null)
             {

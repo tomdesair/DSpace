@@ -119,8 +119,7 @@ public class EditProfileServlet extends DSpaceServlet
      *         they left something out.
      */
     public static boolean updateUserProfile(EPerson eperson,
-            HttpServletRequest request)
-    {
+            HttpServletRequest request) throws AuthorizeException {
         // Get the parameters from the form
         String lastName = request.getParameter("last_name");
         String firstName = request.getParameter("first_name");

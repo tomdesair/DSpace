@@ -20,9 +20,7 @@ import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeConfiguration;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
-import org.dspace.content.Collection;
-import org.dspace.content.Community;
-import org.dspace.content.DSpaceObject;
+import org.dspace.content.*;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
@@ -228,7 +226,12 @@ public class Group extends DSpaceObject
      */
     public String getName()
     {
-        return myRow.getStringColumn("name");
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata("dc", "title", null, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
     }
 
     /**
@@ -237,11 +240,15 @@ public class Group extends DSpaceObject
      * @param name
      *            new group name
      */
-    public void setName(String name)
-    {
-        myRow.setColumn("name", name);
-        modifiedMetadata = true;
-        addDetails("name");
+    public void setName(String name) throws AuthorizeException {
+        try{
+            clearMetadata("dc", "title", null, Item.ANY);
+            addMetadata("dc", "title", null, Item.ANY, name);
+            update();
+            updateMetadata();
+        } catch (SQLException e) {
+            log.error("SQL set Title - ", e);
+        }
     }
 
     /**
@@ -832,7 +839,9 @@ public class Group extends DSpaceObject
 	{
 		String params = "%"+query.toLowerCase()+"%";
         StringBuffer queryBuf = new StringBuffer();
-		queryBuf.append("SELECT * FROM epersongroup WHERE LOWER(name) LIKE LOWER(?) OR eperson_group_id = ? ORDER BY name ASC ");
+		queryBuf.append("SELECT * FROM epersongroup " +
+                "JOIN metadatavalue m on (m.resource_id = epersongroup.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                "WHERE LOWER(m.text_value) LIKE LOWER(?) OR eperson_group_id = ? ORDER BY m.text_value ASC ");
 		
         // Add offset and limit restrictions - Oracle requires special code
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
@@ -887,18 +896,21 @@ public class Group extends DSpaceObject
 		}
 
         // Create the parameter array, including limit and offset if part of the query
-        Object[] paramArr = new Object[]{params, int_param};
+
+        int metadataFieldId = MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID();
+
+        Object[] paramArr = new Object[]{Constants.GROUP, metadataFieldId, params, int_param};
         if (limit > 0 && offset > 0)
         {
-            paramArr = new Object[]{params, int_param, limit, offset};
+            paramArr = new Object[]{Constants.GROUP, metadataFieldId,params, int_param, limit, offset};
         }
         else if (limit > 0)
         {
-            paramArr = new Object[]{params, int_param, limit};
+            paramArr = new Object[]{Constants.GROUP, metadataFieldId,params, int_param, limit};
         }
         else if (offset > 0)
         {
-            paramArr = new Object[]{params, int_param, offset};
+            paramArr = new Object[]{Constants.GROUP, metadataFieldId,params, int_param, offset};
         }
 
         TableRowIterator rows =
@@ -952,7 +964,9 @@ public class Group extends DSpaceObject
     	throws SQLException
 	{
 		String params = "%"+query.toLowerCase()+"%";
-		String dbquery = "SELECT count(*) as gcount FROM epersongroup WHERE LOWER(name) LIKE LOWER(?) OR eperson_group_id = ? ";
+		String dbquery = "SELECT count(*) as gcount FROM epersongroup " +
+                "JOIN metadatavalue m on (m.resource_id = epersongroup.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                "WHERE LOWER(m.text_value) LIKE LOWER(?) OR eperson_group_id = ? ";
 		
 		// When checking against the eperson-id, make sure the query can be made into a number
 		Integer int_param;
@@ -964,7 +978,16 @@ public class Group extends DSpaceObject
 		}
 		
 		// Get all the epeople that match the query
-		TableRow row = DatabaseManager.querySingle(context, dbquery, new Object[] {params, int_param});
+		TableRow row = DatabaseManager.querySingle(
+                context,
+                dbquery,
+                new Object[] {
+                        Constants.GROUP,
+                        MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID(),
+                        params,
+                        int_param
+                }
+        );
 		
 		// use getIntColumn for Oracle count data
 		Long count;

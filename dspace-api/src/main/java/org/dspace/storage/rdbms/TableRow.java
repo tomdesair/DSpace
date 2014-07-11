@@ -261,7 +261,7 @@ public class TableRow
 
         if (!(value instanceof String))
         {
-            throw new IllegalArgumentException("Value is not an string");
+            throw new IllegalArgumentException("Value is not a string");
         }
 
         return (String) value;
