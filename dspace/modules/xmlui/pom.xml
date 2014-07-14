@@ -50,7 +50,7 @@
             <id>default-war</id>
             <activation>
                 <property>
-                    <name>!xmlui.mirage.2</name>
+                    <name>!mirage2.on</name>
                 </property>
             </activation>
             <build>
@@ -113,7 +113,7 @@
             <id>mirage2-war</id>
             <activation>
                 <property>
-                    <name>xmlui.mirage.2</name>
+                    <name>mirage2.on</name>
                 </property>
             </activation>
             <build>

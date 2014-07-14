@@ -127,13 +127,13 @@
         </profile>
 
         <profile>
-            <!--Activates mirage2 on the presence of the property xmlui.mirage.2 with any value e.g. mvn clean package -Dxmlui.mirage.2=on
+            <!--Activates mirage2 on the presence of the property mirage2.on with any value e.g. mvn clean package -Dmirage2.on=on
                 Note the absence of activeByDefault. This module is optional. Also activeByDefault only works when no other profiles are active.
             -->
             <id>mirage2</id>
             <activation>
                 <property>
-                    <name>xmlui.mirage.2</name>
+                    <name>mirage2.on</name>
                 </property>
             </activation>
             <modules>
