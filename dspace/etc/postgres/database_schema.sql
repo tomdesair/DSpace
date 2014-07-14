@@ -146,13 +146,9 @@ CREATE TABLE Bitstream
 (
    bitstream_id            INTEGER PRIMARY KEY,
    bitstream_format_id     INTEGER REFERENCES BitstreamFormatRegistry(bitstream_format_id),
-   name                    VARCHAR(256),
    size_bytes              BIGINT,
    checksum                VARCHAR(64),
    checksum_algorithm      VARCHAR(32),
-   description             TEXT,
-   user_format_description TEXT,
-   source                  VARCHAR(256),
    internal_id             VARCHAR(256),
    deleted                 BOOL,
    store_number            INTEGER,
@@ -171,16 +167,11 @@ CREATE TABLE EPerson
   password            VARCHAR(128),
   salt                VARCHAR(32),
   digest_algorithm    VARCHAR(16),
-  firstname           VARCHAR(64),
-  lastname            VARCHAR(64),
   can_log_in          BOOL,
   require_certificate BOOL,
   self_registered     BOOL,
   last_active         TIMESTAMP,
-  sub_frequency       INTEGER,
-  phone               VARCHAR(32),
-  netid               VARCHAR(64),
-  language            VARCHAR(64)
+  sub_frequency       INTEGER
 );
 
 -- index by email
@@ -194,8 +185,7 @@ CREATE INDEX eperson_netid_idx ON EPerson(netid);
 -------------------------------------------------------
 CREATE TABLE EPersonGroup
 (
-  eperson_group_id INTEGER PRIMARY KEY,
-  name             VARCHAR(256) UNIQUE
+  eperson_group_id INTEGER PRIMARY KEY
 );
 
 ------------------------------------------------------
@@ -252,7 +242,6 @@ CREATE INDEX item_submitter_fk_idx ON Item(submitter_id);
 CREATE TABLE Bundle
 (
   bundle_id          INTEGER PRIMARY KEY,
-  name               VARCHAR(16),  -- ORIGINAL | THUMBNAIL | TEXT
   primary_bitstream_id  INTEGER REFERENCES Bitstream(bitstream_id)
 );
 
@@ -343,12 +332,7 @@ CREATE INDEX metadatafield_schema_idx ON MetadataFieldRegistry(metadata_schema_i
 CREATE TABLE Community
 (
   community_id      INTEGER PRIMARY KEY,
-  name              VARCHAR(128),
-  short_description VARCHAR(512),
-  introductory_text TEXT,
   logo_bitstream_id INTEGER REFERENCES Bitstream(bitstream_id),
-  copyright_text    TEXT,
-  side_bar_text     TEXT,
   admin             INTEGER REFERENCES EPersonGroup( eperson_group_id )
 );
 
@@ -361,15 +345,8 @@ CREATE INDEX community_admin_fk_idx ON Community(admin);
 CREATE TABLE Collection
 (
   collection_id     INTEGER PRIMARY KEY,
-  name              VARCHAR(128),
-  short_description VARCHAR(512),
-  introductory_text TEXT,
   logo_bitstream_id INTEGER REFERENCES Bitstream(bitstream_id),
   template_item_id  INTEGER REFERENCES Item(item_id),
-  provenance_description  TEXT,
-  license           TEXT,
-  copyright_text    TEXT,
-  side_bar_text     TEXT,
   workflow_step_1   INTEGER REFERENCES EPersonGroup( eperson_group_id ),
   workflow_step_2   INTEGER REFERENCES EPersonGroup( eperson_group_id ),
   workflow_step_3   INTEGER REFERENCES EPersonGroup( eperson_group_id ),

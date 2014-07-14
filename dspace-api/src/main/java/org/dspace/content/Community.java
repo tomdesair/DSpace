@@ -428,13 +428,11 @@ public class Community extends DSpaceObject
      * @exception MissingResourceException
      */
     @Deprecated
-    public void setMetadata(String field, String value) throws MissingResourceException, SQLException, AuthorizeException {
+    public void setMetadata(String field, String value) throws MissingResourceException {
         String[] MDValue = getMDValueByLegacyField(field);
 
         clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
         addMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
-        update();
-        updateMetadata();
     }
 
     public String getName()

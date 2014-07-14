@@ -236,8 +236,7 @@ public class CollectionTest extends AbstractDSpaceObjectTest
      * Test of setMetadata method, of class Collection.
      */
     @Test
-    public void testSetMetadata()
-    {
+    public void testSetMetadata() throws SQLException {
         String name = "name";
         String sdesc = "short description";
         String itext = "introductory text";
@@ -692,8 +691,7 @@ public class CollectionTest extends AbstractDSpaceObjectTest
      * Test of setLicense method, of class Collection.
      */
     @Test
-    public void testSetLicense()
-    {
+    public void testSetLicense() throws SQLException {
         String license = "license for test";
         c.setLicense(license);
         assertThat("testSetLicense 0", c.getLicense(), notNullValue());

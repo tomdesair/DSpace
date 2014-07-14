@@ -661,15 +661,9 @@ public class EPerson extends DSpaceObject
      * @param language
      *            language code
      */
-     public void setLanguage(String language) throws AuthorizeException {
-         try{
-             clearMetadata("eperson", "language", null, Item.ANY);
-             addMetadata("eperson", "language", null, Item.ANY, language);
-             update();
-             updateMetadata();
-         } catch (SQLException e) {
-             log.error("SQL set Title - ", e);
-         }
+     public void setLanguage(String language) {
+        clearMetadata("eperson", "language", null, Item.ANY);
+        addMetadata("eperson", "language", null, Item.ANY, language);
      }
   
 
@@ -732,15 +726,9 @@ public class EPerson extends DSpaceObject
      * @param s
      *            the new netid
      */
-    public void setNetid(String s) throws AuthorizeException {
-        try{
+    public void setNetid(String s) {
             clearMetadata("eperson", "netid", null, Item.ANY);
             addMetadata("eperson", "netid", null, Item.ANY, s);
-            update();
-            updateMetadata();
-        } catch (SQLException e) {
-            log.error("SQL set Eperson Netid - ", e);
-        }
     }
 
     /**
@@ -799,15 +787,9 @@ public class EPerson extends DSpaceObject
      * @param firstname
      *            the person's first name
      */
-    public void setFirstName(String firstname) throws AuthorizeException {
-        try{
+    public void setFirstName(String firstname) {
             clearMetadata("eperson", "firstname", null, Item.ANY);
             addMetadata("eperson", "firstname", null, Item.ANY, firstname);
-            update();
-            updateMetadata();
-        } catch (SQLException e) {
-            log.error("SQL set Eperson firstname - ", e);
-        }
     }
 
     /**
@@ -831,15 +813,9 @@ public class EPerson extends DSpaceObject
      * @param lastname
      *            the person's last name
      */
-    public void setLastName(String lastname) throws AuthorizeException {
-        try{
+    public void setLastName(String lastname) {
             clearMetadata("eperson", "lastname", null, Item.ANY);
             addMetadata("eperson", "lastname", null, Item.ANY, lastname);
-            update();
-            updateMetadata();
-        } catch (SQLException e) {
-            log.error("SQL set Eperson lastname - ", e);
-        }
     }
 
     /**

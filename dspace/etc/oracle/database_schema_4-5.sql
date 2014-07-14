@@ -1,8 +1,8 @@
 alter table metadatavalue rename item_id to resource_id;
-alter table metadatavalue alter column resource_id set not null;
+alter table metadatavalue alter column resource_id not null;
 alter table metadatavalue add column resource_type_id integer;
 UPDATE metadatavalue SET resource_type_id = 2;
-alter table metadatavalue alter column resource_type_id set not null;
+alter table metadatavalue alter column resource_type_id not null;
 alter table metadatavalue drop constraint metadatavalue_item_id_fkey;
 
 
@@ -60,7 +60,7 @@ null AS text_lang,
 0 AS place
 FROM community where not name is null;
 
-alter table community drop column introductory_text, drop column short_description, drop column side_bar_text, drop column copyright_text, drop column name;
+alter table community drop (introductory_text, short_description, side_bar_text, copyright_text, name);
 
 
 -- ----------
@@ -139,7 +139,7 @@ null AS text_lang,
 0 AS place
 FROM collection where not license is null;
 
-alter table collection drop column introductory_text, drop column short_description, drop column copyright_text, drop column side_bar_text, drop column name, drop column license, drop column provenance_description;
+alter table collection drop (introductory_text, short_description, copyright_text, side_bar_text, name, license, provenance_description);
 
 
 -- ---------
@@ -205,7 +205,7 @@ null AS text_lang,
 0 AS place
 FROM bitstream where not source is null;
 
-alter table bitstream drop column name, drop column description, drop column user_format_description, drop column source;
+alter table bitstream drop (name, description, user_format_description, source);
 
 
 -- ---------
@@ -295,4 +295,4 @@ null AS text_lang,
 FROM eperson where not language is null;
 
 
-alter table eperson  drop column firstname, drop column lastname, drop column phone, drop column netid, drop column language;
+alter table eperson  drop (firstname, lastname, phone, netid, language);

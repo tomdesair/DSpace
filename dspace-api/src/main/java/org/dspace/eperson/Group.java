@@ -240,15 +240,9 @@ public class Group extends DSpaceObject
      * @param name
      *            new group name
      */
-    public void setName(String name) throws AuthorizeException {
-        try{
+    public void setName(String name) {
             clearMetadata("dc", "title", null, Item.ANY);
             addMetadata("dc", "title", null, Item.ANY, name);
-            update();
-            updateMetadata();
-        } catch (SQLException e) {
-            log.error("SQL set Title - ", e);
-        }
     }
 
     /**

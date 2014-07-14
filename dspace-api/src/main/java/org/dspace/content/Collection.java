@@ -525,13 +525,11 @@ public class Collection extends DSpaceObject
      *                if the requested metadata field doesn't exist
      * @exception MissingResourceException
      */
-    public void setMetadata(String field, String value) throws MissingResourceException, SQLException, AuthorizeException {
+    public void setMetadata(String field, String value) throws MissingResourceException {
         String[] MDValue = getMDValueByLegacyField(field);
 
         clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
         addMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
-        update();
-        updateMetadata();
     }
 
     public String getName()
@@ -890,7 +888,7 @@ public class Collection extends DSpaceObject
      * @param license
      *            the license, or <code>null</code>
      */
-    public void setLicense(String license) throws SQLException, AuthorizeException {
+    public void setLicense(String license) throws SQLException {
         setMetadata("license",license);
     }
 
