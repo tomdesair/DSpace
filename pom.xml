@@ -457,7 +457,20 @@
                 <module>dspace-swordv2</module>
             </modules>
         </profile>
-
+       <!--
+      Builds MIRAGE2 WAR for DSpace
+   -->
+       <profile>
+           <id>dspace-mirage2</id>
+           <activation>
+               <file>
+                   <exists>dspace-mirage2/pom.xml</exists>
+               </file>
+           </activation>
+           <modules>
+               <module>dspace-mirage2</module>
+           </modules>
+       </profile>
         <!--
            Builds XMLUI WAR for DSpace
         -->
@@ -472,6 +485,8 @@
                 <module>dspace-xmlui</module>
             </modules>
         </profile>
+
+
 
         <!--
            Builds LNI WAR & Client for DSpace
@@ -504,12 +519,13 @@
          <modules>
             <module>dspace-api</module>
             <module>dspace-jspui</module>
-            <module>dspace-xmlui</module>
-            <module>dspace-lni</module>
-            <module>dspace-oai</module>
-            <module>dspace-rest</module>
-            <module>dspace-sword</module>
-            <module>dspace-swordv2</module>
+             <module>dspace-mirage2</module>
+             <module>dspace-xmlui</module>
+             <module>dspace-lni</module>
+             <module>dspace-oai</module>
+             <module>dspace-rest</module>
+             <module>dspace-sword</module>
+             <module>dspace-swordv2</module>
          </modules>
       </profile>
 
@@ -528,6 +544,8 @@
             <maven.test.skip>true</maven.test.skip>
         </properties>
       </profile>
+
+
     
    </profiles>
 
