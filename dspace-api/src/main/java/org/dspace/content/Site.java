@@ -109,6 +109,7 @@ public class Site extends DSpaceObject
     public void update()
         throws SQLException, AuthorizeException
     {
+        updateMetadata();
     }
 
     public String getName()

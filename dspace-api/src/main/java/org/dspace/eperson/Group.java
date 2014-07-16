@@ -62,8 +62,6 @@ public class Group extends DSpaceObject
     /** is this just a stub, or is all data loaded? */
     private boolean isDataLoaded = false;
 
-    /** Flag set when metadata is modified, for events */
-    private boolean modifiedMetadata;
 
     /**
      * Construct a Group from a given context and tablerow
@@ -73,14 +71,12 @@ public class Group extends DSpaceObject
      */
     Group(Context context, TableRow row) throws SQLException
     {
-        super();
-        ourContext = context;
+        super(context);
         myRow = row;
 
         // Cache ourselves
         context.cache(this, row.getIntColumn("eperson_group_id"));
 
-        modifiedMetadata = false;
         clearDetails();
     }
 
@@ -226,12 +222,7 @@ public class Group extends DSpaceObject
      */
     public String getName()
     {
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata("dc", "title", null, Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-        return null;
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     /**
@@ -241,8 +232,7 @@ public class Group extends DSpaceObject
      *            new group name
      */
     public void setName(String name) {
-            clearMetadata("dc", "title", null, Item.ANY);
-            addMetadata("dc", "title", null, Item.ANY, name);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY, name);
     }
 
     /**
@@ -701,8 +691,13 @@ public class Group extends DSpaceObject
     public static Group findByName(Context context, String name)
             throws SQLException
     {
-        TableRow row = DatabaseManager.findByUnique(context, "epersongroup",
-                "name", name);
+        TableRow row = DatabaseManager.querySingle(context, "select * from epersongroup e " +
+                "JOIN metadatavalue m on (m.resource_id = e.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                "where m.text_value = ?",
+                Constants.GROUP,
+                MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
+                name
+        );
 
         if (row == null)
         {
@@ -743,24 +738,31 @@ public class Group extends DSpaceObject
         switch (sortField)
         {
         case ID:
-            s = "eperson_group_id";
+            s = "e.eperson_group_id";
 
             break;
 
         case NAME:
-            s = "name";
+            s = "m_text_value";
 
             break;
 
         default:
-            s = "name";
+            s = "m_text_value";
         }
 
         // NOTE: The use of 's' in the order by clause can not cause an SQL 
         // injection because the string is derived from constant values above.
         TableRowIterator rows = DatabaseManager.queryTable(
         		context, "epersongroup",
-                "SELECT * FROM epersongroup ORDER BY "+s);
+                "select * from epersongroup e " +
+                        "JOIN metadatavalue m on (m.resource_id = e.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                        "order by ?",
+                Constants.GROUP,
+                MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
+                s
+        );
+
 
         try
         {
@@ -891,7 +893,7 @@ public class Group extends DSpaceObject
 
         // Create the parameter array, including limit and offset if part of the query
 
-        int metadataFieldId = MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID();
+        int metadataFieldId = MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID();
 
         Object[] paramArr = new Object[]{Constants.GROUP, metadataFieldId, params, int_param};
         if (limit > 0 && offset > 0)
@@ -977,7 +979,7 @@ public class Group extends DSpaceObject
                 dbquery,
                 new Object[] {
                         Constants.GROUP,
-                        MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID(),
+                        MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                         params,
                         int_param
                 }
@@ -1042,6 +1044,8 @@ public class Group extends DSpaceObject
 
         log.info(LogManager.getHeader(ourContext, "delete_group", "group_id="
                 + getID()));
+
+        removeMetadataFromDatabase();
     }
 
     /**
@@ -1153,6 +1157,7 @@ public class Group extends DSpaceObject
             DatabaseManager.updateQuery(ourContext,
                     "delete from group2group where parent_id= ? ",
                     getID());
+            updateMetadata();
 
             // Add new mappings
             Iterator<Group> i = groups.iterator();

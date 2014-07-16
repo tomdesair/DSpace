@@ -48,8 +48,6 @@ public class Bundle extends DSpaceObject
     /** The bitstreams in this bundle */
     private List<Bitstream> bitstreams;
 
-    /** Flag set when metadata is modified, for events */
-    private boolean modifiedMetadata;
 
     /**
      * Construct a bundle object with the given table row
@@ -61,8 +59,7 @@ public class Bundle extends DSpaceObject
      */
     Bundle(Context context, TableRow row) throws SQLException
     {
-        super();
-        ourContext = context;
+        super(context);
         bundleRow = row;
         bitstreams = new ArrayList<Bitstream>();
         String bitstreamOrderingField  = ConfigurationManager.getProperty("webui.bitstream.order.field");
@@ -128,8 +125,6 @@ public class Bundle extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("bundle_id"));
 
-        modified = false;
-        modifiedMetadata = false;
     }
 
     /**
@@ -218,7 +213,7 @@ public class Bundle extends DSpaceObject
      */
     public String getName()
     {
-        return bundleRow.getStringColumn("name");
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     /**
@@ -230,8 +225,7 @@ public class Bundle extends DSpaceObject
      */
     public void setName(String name)
     {
-        bundleRow.setColumn("name", name);
-        modifiedMetadata = true;
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY, name);
     }
 
     /**
@@ -253,7 +247,7 @@ public class Bundle extends DSpaceObject
     public void setPrimaryBitstreamID(int bitstreamID)
     {
         bundleRow.setColumn("primary_bitstream_id", bitstreamID);
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
     /**
@@ -496,7 +490,7 @@ public class Bundle extends DSpaceObject
             bitstreams.add(bitstreamMap.get(bitstreamId));
         }
 
-        //The order of the bitstreams has changed, ensure that we update the last modified of our item
+        //The order of the bitstreams has changed, ensure that we update the last modifiedMetadata of our item
         Item owningItem = (Item) getParentObject();
         if(owningItem != null)
         {
@@ -543,7 +537,7 @@ public class Bundle extends DSpaceObject
 
         ourContext.addEvent(new Event(Event.REMOVE, Constants.BUNDLE, getID(), Constants.BITSTREAM, b.getID(), String.valueOf(b.getSequenceID())));
 
-        //Ensure that the last modified from the item is triggered !
+        //Ensure that the last modifiedMetadata from the item is triggered !
         Item owningItem = (Item) getParentObject();
         if(owningItem != null)
         {
@@ -599,10 +593,10 @@ public class Bundle extends DSpaceObject
         log.info(LogManager.getHeader(ourContext, "update_bundle", "bundle_id="
                 + getID()));
 
-        if (modified)
+        if (this.modifiedMetadata)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.BUNDLE, getID(), null));
-            modified = false;
+            this.modifiedMetadata = false;
         }
         if (modifiedMetadata)
         {
@@ -611,6 +605,7 @@ public class Bundle extends DSpaceObject
         }
 
         DatabaseManager.update(ourContext, bundleRow);
+        updateMetadata();
     }
 
     /**
@@ -641,6 +636,8 @@ public class Bundle extends DSpaceObject
 
         // Remove ourself
         DatabaseManager.delete(ourContext, bundleRow);
+
+        removeMetadataFromDatabase();
     }
 
     /**

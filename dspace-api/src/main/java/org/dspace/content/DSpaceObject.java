@@ -7,16 +7,12 @@
  */
 package org.dspace.content;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.authorize.AuthorizeManager;
-import org.dspace.browse.BrowseException;
-import org.dspace.browse.IndexBrowse;
 import org.dspace.content.authority.ChoiceAuthorityManager;
 import org.dspace.content.authority.Choices;
 import org.dspace.content.authority.MetadataAuthorityManager;
@@ -26,7 +22,6 @@ import org.dspace.core.LogManager;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
 import org.dspace.event.Event;
-import org.dspace.handle.HandleManager;
 import org.dspace.storage.rdbms.DatabaseManager;
 import org.dspace.storage.rdbms.TableRow;
 import org.dspace.storage.rdbms.TableRowIterator;
@@ -40,13 +35,13 @@ public abstract class DSpaceObject
     protected Context ourContext;
 
     /** log4j category */
-    private static final Logger log = Logger.getLogger(Item.class);
+    private static final Logger log = Logger.getLogger(DSpaceObject.class);
 
     /**
      * True if anything else was changed since last update()
      * (to drive event mechanism)
      */
-    protected boolean modified;
+    protected boolean modifiedMetadata;
 
 
     // accumulate information to add to "detail" element of content Event,
@@ -54,13 +49,8 @@ public abstract class DSpaceObject
     private StringBuffer eventDetails = null;
 
     /** The Dublin Core metadata - inner class for lazy loading */
-    MetadataCache dublinCore = new MetadataCache();
+    protected MetadataCache metadataCache = new MetadataCache();
 
-    /**
-     * True if the Dublin Core has changed since reading from the DB or the last
-     * update()
-     */
-    protected boolean dublinCoreChanged;
 
     /**
      * Construct a DSpaceOBject with the given table row
@@ -69,8 +59,15 @@ public abstract class DSpaceObject
      */
     protected DSpaceObject()
     {
-        dublinCoreChanged = false;
+        modifiedMetadata = false;
     }
+
+    protected DSpaceObject(Context context)
+    {
+        ourContext = context;
+        modifiedMetadata = false;
+    }
+
 
     public void updateMetadata() throws SQLException, AuthorizeException {
         // Map counting number of values for each element/qualifier.
@@ -79,7 +76,7 @@ public abstract class DSpaceObject
         // element/qualifier
         Map<String,Integer> elementCount = new HashMap<String,Integer>();
 
-        dublinCoreChanged = false;
+        modifiedMetadata = false;
 
         // Arrays to store the working information required
         int[]     placeNum = new int[getMetadata().size()];
@@ -234,8 +231,7 @@ public abstract class DSpaceObject
                     if (removeRow)
                     {
                         DatabaseManager.delete(ourContext, tr);
-                        dublinCoreChanged = true;
-                        modified = true;
+                        modifiedMetadata = true;
                     }
                 }
             }
@@ -266,8 +262,7 @@ public abstract class DSpaceObject
                 metadata.setAuthority(dcv.authority);
                 metadata.setConfidence(dcv.confidence);
                 metadata.create(ourContext);
-                dublinCoreChanged = true;
-                modified = true;
+                modifiedMetadata = true;
             }
         }
 
@@ -597,11 +592,32 @@ public abstract class DSpaceObject
         return values;
     }
 
+    /**
+     * Retrieve first metadata field value
+     */
+    protected String getMetadataFirstValue(String schema, String element, String qualifier, String language){
+        DCValue[] dcvalues = new DCValue[0];
+        dcvalues = getMetadata(schema, element, qualifier, Item.ANY);
+        if(dcvalues.length>0){
+            return dcvalues[0].value;
+        }
+        return null;
+    }
+
+    /**
+     * Set first metadata field value
+     */
+    protected void setMetadataFirstValue(String schema, String element, String qualifier, String language, String value) {
+        clearMetadata(MetadataSchema.DC_SCHEMA, "description", null, Item.ANY);
+        addMetadata(MetadataSchema.DC_SCHEMA, "description", null, Item.ANY, value);
+        modifiedMetadata = true;
+    }
+
     protected List<DCValue> getMetadata()
     {
         try
         {
-            return dublinCore.get(ourContext, getID(), log);
+            return metadataCache.get(ourContext, getID(), getType(), log);
         }
         catch (SQLException e)
         {
@@ -822,7 +838,7 @@ public abstract class DSpaceObject
 
         if (values.length > 0)
         {
-            dublinCoreChanged = true;
+            modifiedMetadata = true;
         }
     }
 
@@ -956,7 +972,7 @@ public abstract class DSpaceObject
 
         // Now swap the old list of values for the new, unremoved values
         setMetadata(values);
-        dublinCoreChanged = true;
+        modifiedMetadata = true;
     }
 
     /**
@@ -1095,22 +1111,22 @@ public abstract class DSpaceObject
 
     private void setMetadata(List<DCValue> metadata)
     {
-        dublinCore.set(metadata);
-        dublinCoreChanged = true;
+        metadataCache.set(metadata);
+        modifiedMetadata = true;
     }
 
     class MetadataCache
     {
         List<DCValue> metadata = null;
 
-        List<DCValue> get(Context c, int itemId, Logger log) throws SQLException
+        List<DCValue> get(Context c, int resourceId, int resourceTypeId, Logger log) throws SQLException
         {
             if (metadata == null)
             {
                 metadata = new ArrayList<DCValue>();
 
                 // Get Dublin Core metadata
-                TableRowIterator tri = retrieveMetadata(itemId);
+                TableRowIterator tri = retrieveMetadata(resourceId, resourceTypeId);
 
                 if (tri != null)
                 {
@@ -1173,13 +1189,14 @@ public abstract class DSpaceObject
             metadata = m;
         }
 
-        TableRowIterator retrieveMetadata(int itemId) throws SQLException
+        TableRowIterator retrieveMetadata(int resourceId, int resourceTypeId) throws SQLException
         {
-            if (itemId > 0)
+            if (resourceId > 0)
             {
                 return DatabaseManager.queryTable(ourContext, "MetadataValue",
-                        "SELECT * FROM MetadataValue WHERE resource_id= ? ORDER BY metadata_field_id, place",
-                        itemId);
+                        "SELECT * FROM MetadataValue WHERE resource_id= ? and resource_type_id = ? ORDER BY metadata_field_id, place",
+                        resourceId,
+                        resourceTypeId);
             }
 
             return null;
@@ -1204,100 +1221,38 @@ public abstract class DSpaceObject
     }
 
     protected String[] getMDValueByLegacyField(String field){
-        if(getType()==Constants.COMMUNITY) {
-            switch (field) {
-                case "introductory_text":
-                    return new String[]{"dc", "description", null};
-                case "short_description":
-                    return new String[]{"dc", "description", "abstract"};
-                case "side_bar_text":
-                    return new String[]{"dc", "description", "tableofcontents"};
-                case "copyright_text":
-                    return new String[]{"dc", "rights", null};
-                case "name":
-                    return new String[]{"dc", "title", null};
-                default:
-                    return new String[]{"", "", null};
-            }
+        switch (field) {
+            case "introductory_text":
+                return new String[]{MetadataSchema.DC_SCHEMA, "description", null};
+            case "short_description":
+                return new String[]{MetadataSchema.DC_SCHEMA, "description", "abstract"};
+            case "side_bar_text":
+                return new String[]{MetadataSchema.DC_SCHEMA, "description", "tableofcontents"};
+            case "copyright_text":
+                return new String[]{MetadataSchema.DC_SCHEMA, "rights", null};
+            case "name":
+                return new String[]{MetadataSchema.DC_SCHEMA, "title", null};
+            case "provenance_description":
+                return new String[]{MetadataSchema.DC_SCHEMA,"provenance", null};
+            case "license":
+                return new String[]{MetadataSchema.DC_SCHEMA, "rights", "license"};
+            case "user_format_description":
+                return new String[]{MetadataSchema.DC_SCHEMA,"format",null};
+            case "source":
+                return new String[]{MetadataSchema.DC_SCHEMA,"source",null};
+            case "firstname":
+                return new String[]{"eperson","firstname",null};
+            case "lastname":
+                return new String[]{"eperson","lastname",null};
+            case "phone":
+                return new String[]{"eperson","phone",null};
+            case "netid":
+                return new String[]{"eperson","netid",null};
+            case "language":
+                return new String[]{"eperson","language",null};
+            default:
+                return new String[]{null, null, null};
         }
-
-        if(getType()==Constants.COLLECTION) {
-            switch (field) {
-                case "introductory_text":
-                    return new String[]{"dc","description",null};
-                case "short_description":
-                    return new String[]{"dc","description","abstract"};
-                case "side_bar_text":
-                    return new String[]{"dc","description","tableofcontents"};
-                case "copyright_text":
-                    return new String[]{"dc","rights", null};
-                case "name":
-                    return new String[]{"dc","title", null};
-                case "provenance_description":
-                    return new String[]{"dc","provenance", null};
-                case "license":
-                    return new String[]{"dc", "rights", "license"};
-                default:
-                    return new String[]{"", "", null};
-            }
-        }
-
-        if(getType()==Constants.BUNDLE) {
-            switch (field) {
-                case "name":
-                    return new String[]{"dc","title", null};
-                default:
-                    return new String[]{"", "", null};
-            }
-        }
-
-        if(getType()==Constants.BITSTREAM) {
-            switch (field) {
-                case "introductory_text":
-                    return new String[]{"dc","description",null};
-                case "copyright_text":
-                    return new String[]{"dc","rights", null};
-                case "name":
-                    return new String[]{"dc","title", null};
-                case "user_format_description":
-                    return new String[]{"dc","format",null};
-                case "source":
-                    return new String[]{"dc","source",null};
-                default:
-                    return new String[]{"", "", null};
-            }
-        }
-
-        if(getType()==Constants.GROUP) {
-            switch (field) {
-                case "name":
-                    return new String[]{"dc","title", null};
-                default:
-                    return new String[]{"", "", null};
-            }
-        }
-
-
-        if(getType()==Constants.EPERSON) {
-            switch (field) {
-                case "email":
-                    return new String[]{"eperson","email",null};
-                case "firstname":
-                    return new String[]{"eperson","firstname",null};
-                case "lastname":
-                    return new String[]{"eperson","lastname",null};
-                case "phone":
-                    return new String[]{"eperson","phone",null};
-                case "netid":
-                    return new String[]{"eperson","netid",null};
-                case "language":
-                    return new String[]{"eperson","language",null};
-                default:
-                    return new String[]{"", "", null};
-            }
-        }
-        
-        return null;
     }
     
 }

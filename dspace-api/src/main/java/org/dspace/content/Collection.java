@@ -69,8 +69,6 @@ public class Collection extends DSpaceObject
     /** Our Handle */
     private String handle;
 
-    /** Flag set when metadata is modified, for events */
-    private boolean modifiedMetadata;
 
     /**
      * Groups corresponding to workflow steps - NOTE these start from one, so
@@ -102,8 +100,7 @@ public class Collection extends DSpaceObject
      */
     Collection(Context context, TableRow row) throws SQLException
     {
-        super();
-        ourContext = context;
+        super(context);
         collectionRow = row;
 
         // Get the logo bitstream
@@ -144,8 +141,6 @@ public class Collection extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("collection_id"));
 
-        modified = false;
-        modifiedMetadata = false;
         clearDetails();
     }
 
@@ -301,7 +296,7 @@ public class Collection extends DSpaceObject
                             "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "ORDER BY m.text_value",
                     Constants.COLLECTION,
-                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID()
+                    MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID()
             );
         } catch (SQLException e) {
             log.error("Find all Collections - ",e);
@@ -362,7 +357,7 @@ public class Collection extends DSpaceObject
                             "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "ORDER BY m.text_value limit ? offset ?",
                     Constants.COLLECTION,
-                    MetadataField.findByElement(context, MetadataSchema.find(context, "dc").getSchemaID(), "title", null).getFieldID(),
+                    MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                     limit,
                     offset
             );
@@ -502,15 +497,10 @@ public class Collection extends DSpaceObject
      * @exception IllegalArgumentException
      *                if the requested metadata field doesn't exist
      */
-    @Deprecated
     public String getMetadata(String field)
     {
         String[] MDValue = getMDValueByLegacyField(field);
-        DCValue[] dcvalues = getMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-        return null;
+        return getMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
     }
 
     /**
@@ -526,15 +516,41 @@ public class Collection extends DSpaceObject
      * @exception MissingResourceException
      */
     public void setMetadata(String field, String value) throws MissingResourceException {
+        if ((field.trim()).equals("name") && (value == null || value.trim().equals("")))
+        {
+            try
+            {
+                value = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
+            }
+            catch (MissingResourceException e)
+            {
+                value = "Untitled";
+            }
+        }
+
         String[] MDValue = getMDValueByLegacyField(field);
 
-        clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
-        addMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+        /*
+         * Set metadata field to null if null
+         * and trim strings to eliminate excess
+         * whitespace.
+         */
+		if(value == null)
+        {
+            clearMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
+            modifiedMetadata = true;
+        }
+        else
+        {
+            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+        }
+
+        addDetails(field);
     }
 
     public String getName()
     {
-        return getMetadata("name");
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     /**
@@ -606,7 +622,7 @@ public class Collection extends DSpaceObject
                             + newLogo.getID()));
         }
 
-        modified = true;
+        this.modifiedMetadata = true;
         return logo;
     }
 
@@ -669,7 +685,7 @@ public class Collection extends DSpaceObject
         {
             collectionRow.setColumn("workflow_step_" + step, g.getID());
         }
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
     /**
@@ -718,7 +734,7 @@ public class Collection extends DSpaceObject
 
         AuthorizeManager.addPolicy(ourContext, this, Constants.ADD, submitters);
 
-        modified = true;
+        this.modifiedMetadata = true;
         return submitters;
     }
 
@@ -743,7 +759,7 @@ public class Collection extends DSpaceObject
         collectionRow.setColumnNull("submitter");
         submitters = null;
 
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
 
@@ -794,7 +810,7 @@ public class Collection extends DSpaceObject
         // register this as the admin group
         collectionRow.setColumn("admin", admins.getID());
 
-        modified = true;
+        this.modifiedMetadata = true;
         return admins;
     }
 
@@ -819,7 +835,7 @@ public class Collection extends DSpaceObject
         collectionRow.setColumnNull("admin");
         admins = null;
 
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
     /**
@@ -888,7 +904,7 @@ public class Collection extends DSpaceObject
      * @param license
      *            the license, or <code>null</code>
      */
-    public void setLicense(String license) throws SQLException {
+    public void setLicense(String license) {
         setMetadata("license",license);
     }
 
@@ -928,7 +944,7 @@ public class Collection extends DSpaceObject
                     "collection_id=" + getID() + ",template_item_id="
                             + template.getID()));
         }
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
     /**
@@ -1052,11 +1068,12 @@ public class Collection extends DSpaceObject
                 "collection_id=" + getID()));
 
         DatabaseManager.update(ourContext, collectionRow);
+        updateMetadata();
 
-        if (modified)
+        if (this.modifiedMetadata)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.COLLECTION, getID(), null));
-            modified = false;
+            this.modifiedMetadata = false;
         }
         if (modifiedMetadata)
         {
@@ -1291,6 +1308,8 @@ public class Collection extends DSpaceObject
         {
             g.delete();
         }
+
+        removeMetadataFromDatabase();
     }
 
     /**
@@ -1560,7 +1579,7 @@ public class Collection extends DSpaceObject
     @Override
     public void updateLastModified()
     {
-        //Also fire a modified event since the collection HAS been modified
+        //Also fire a modifiedMetadata event since the collection HAS been modifiedMetadata
         ourContext.addEvent(new Event(Event.MODIFY, Constants.COLLECTION, getID(), null));
     }
 }

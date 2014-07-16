@@ -48,8 +48,6 @@ public class Bitstream extends DSpaceObject
     /** The bitstream format corresponding to this bitstream */
     private BitstreamFormat bitstreamFormat;
 
-    /** Flag set when metadata is modified, for events */
-    private boolean modifiedMetadata;
 
     /**
      * Private constructor for creating a Bitstream object based on the contents
@@ -63,8 +61,7 @@ public class Bitstream extends DSpaceObject
      */
     Bitstream(Context context, TableRow row) throws SQLException
     {
-        super();// TODO parent constructor callen
-        ourContext = context;
+        super(context);// TODO parent constructor callen
         bRow = row;
 
         // Get the bitstream format
@@ -86,8 +83,6 @@ public class Bitstream extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("bitstream_id"));
 
-        modified = false;
-        modifiedMetadata = false;
         clearDetails();
     }
 
@@ -293,12 +288,7 @@ public class Bitstream extends DSpaceObject
      * @return the name of the bitstream
      */
     public String getName(){
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata("dc", "title", null, Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-       return null;
+        return getMetadataFirstValue("dc", "title", null, Item.ANY);
     }
 
     /**
@@ -308,8 +298,7 @@ public class Bitstream extends DSpaceObject
      *            the new name of the bitstream
      */
     public void setName(String n) {
-            clearMetadata("dc", "title", null, Item.ANY);
-            addMetadata("dc", "title", null, Item.ANY, n);
+        setMetadataFirstValue("dc", "title", null, Item.ANY, n);
     }
 
     /**
@@ -321,12 +310,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getSource()
     {
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata("dc", "source", null, Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-        return null;
+        return getMetadataFirstValue("dc", "source", null, Item.ANY);
     }
 
     /**
@@ -336,8 +320,7 @@ public class Bitstream extends DSpaceObject
      *            the new source of the bitstream
      */
     public void setSource(String n) {
-            clearMetadata("dc", "source", null, Item.ANY);
-            addMetadata("dc", "source", null, Item.ANY, n);
+        setMetadataFirstValue("dc", "source", null, Item.ANY, n);
     }
 
     /**
@@ -348,12 +331,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getDescription()
     {
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata("dc", "description", null, Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-        return null;
+        return getMetadataFirstValue("dc", "description", null, Item.ANY);
     }
 
     /**
@@ -363,8 +341,7 @@ public class Bitstream extends DSpaceObject
      *            the new description of the bitstream
      */
     public void setDescription(String n) {
-            clearMetadata("dc", "description", null, Item.ANY);
-            addMetadata("dc", "description", null, Item.ANY, n);
+        setMetadataFirstValue("dc", "description", null, Item.ANY, n);
     }
 
     /**
@@ -406,9 +383,7 @@ public class Bitstream extends DSpaceObject
      * @throws SQLException
      */
     public void setUserFormatDescription(String desc) {
-            clearMetadata("dc", "format", null, Item.ANY);
-            addMetadata("dc", "format", null, Item.ANY, desc);
-
+        setMetadataFirstValue("dc", "format", null, Item.ANY, desc);
     }
 
     /**
@@ -419,19 +394,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getUserFormatDescription()
     {
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata("dc", "format", null, Item.ANY);
-        if(dcvalues.length>0){
-            return dcvalues[0].value;
-        }
-        return null;
-        /*try {
-            int metadataFieldId = MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, "dc").getSchemaID(), "format", null).getFieldID();
-            return getValueByColumn(metadataFieldId);
-        } catch (SQLException e) {
-            log.error("SQL Bitstream getFormatDescription - ", e);
-        }
-        return null;*/
+        return getMetadataFirstValue("dc", "format", null, Item.ANY);
     }
 
     /**
@@ -498,7 +461,7 @@ public class Bitstream extends DSpaceObject
 
         // Update the ID in the table row
         bRow.setColumn("bitstream_format_id", bitstreamFormat.getID());
-        modified = true;
+        this.modifiedMetadata = true;
     }
 
     /**
@@ -516,10 +479,10 @@ public class Bitstream extends DSpaceObject
         log.info(LogManager.getHeader(ourContext, "update_bitstream",
                 "bitstream_id=" + getID()));
 
-        if (modified)
+        if (this.modifiedMetadata)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.BITSTREAM, getID(), null));
-            modified = false;
+            this.modifiedMetadata = false;
         }
         if (modifiedMetadata)
         {
@@ -529,6 +492,7 @@ public class Bitstream extends DSpaceObject
         }
 
         DatabaseManager.update(ourContext, bRow);
+        updateMetadata();
     }
 
     /**
@@ -567,6 +531,8 @@ public class Bitstream extends DSpaceObject
         // Remove bitstream itself
         BitstreamStorageManager.delete(ourContext, bRow
                 .getIntColumn("bitstream_id"));
+
+        removeMetadataFromDatabase();
     }
 
     /**
@@ -755,7 +721,7 @@ public class Bitstream extends DSpaceObject
     @Override
     public void updateLastModified()
     {
-        //Also fire a modified event since the bitstream HAS been modified
+        //Also fire a modifiedMetadata event since the bitstream HAS been modifiedMetadata
         ourContext.addEvent(new Event(Event.MODIFY, Constants.BITSTREAM, getID(), null));
     }
 }

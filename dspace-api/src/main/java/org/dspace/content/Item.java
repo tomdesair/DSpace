@@ -14,12 +14,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.util.AuthorizeUtil;
 import org.dspace.authorize.AuthorizeConfiguration;
@@ -33,7 +29,6 @@ import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.content.authority.Choices;
 import org.dspace.content.authority.ChoiceAuthorityManager;
-import org.dspace.content.authority.MetadataAuthorityManager;
 import org.dspace.event.Event;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
@@ -84,10 +79,10 @@ public class Item extends DSpaceObject
     private String handle;
 
     /**
-     * True if the Dublin Core has changed since reading from the DB or the last
-     * update()
+     * True if anything else was changed since last update()
+     * (to drive event mechanism)
      */
-    private boolean dublinCoreChanged;
+    private boolean modified;
 
     /**
      * Construct an item with the given table row
@@ -100,8 +95,7 @@ public class Item extends DSpaceObject
      */
     Item(Context context, TableRow row) throws SQLException
     {
-        super();
-        ourContext = context;
+        super(context);
         itemRow = row;
         modified = false;
         clearDetails();
@@ -113,12 +107,6 @@ public class Item extends DSpaceObject
         context.cache(this, row.getIntColumn("item_id"));
     }
 
-    private TableRowIterator retrieveMetadata() throws SQLException
-    {
-        return DatabaseManager.queryTable(ourContext, "MetadataValue",
-                "SELECT * FROM MetadataValue WHERE resource_id= ? ORDER BY metadata_field_id, place",
-                itemRow.getIntColumn("resource_id"));
-    }
 
     /**
      * Get an item from the database. The item, its Dublin Core metadata, and
@@ -183,7 +171,7 @@ public class Item extends DSpaceObject
         // set discoverable to true (default)
         i.setDiscoverable(true);
 
-        // Call update to give the item a last modified date. OK this isn't
+        // Call update to give the item a last modifiedMetadata date. OK this isn't
         // amazingly efficient but creates don't happen that often.
         context.turnOffAuthorisationSystem();
         i.update();
@@ -318,10 +306,10 @@ public class Item extends DSpaceObject
     }
 
     /**
-     * Get the date the item was last modified, or the current date if
+     * Get the date the item was last modifiedMetadata, or the current date if
      * last_modified is null
      *
-     * @return the date the item was last modified, or the current date if the
+     * @return the date the item was last modifiedMetadata, or the current date if the
      *         column is null.
      */
     public Date getLastModified()
@@ -337,7 +325,7 @@ public class Item extends DSpaceObject
     }
 
     /**
-     * Method that updates the last modified date of the item
+     * Method that updates the last modifiedMetadata date of the item
      */
     public void updateLastModified()
     {
@@ -345,10 +333,10 @@ public class Item extends DSpaceObject
             Date lastModified = new Timestamp(new Date().getTime());
             itemRow.setColumn("last_modified", lastModified);
             DatabaseManager.updateQuery(ourContext, "UPDATE item SET last_modified = ? WHERE item_id= ? ", lastModified, getID());
-            //Also fire a modified event since the item HAS been modified
+            //Also fire a modifiedMetadata event since the item HAS been modifiedMetadata
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
         } catch (SQLException e) {
-            log.error(LogManager.getHeader(ourContext, "Error while updating last modified timestamp", "Item: " + getID()));
+            log.error(LogManager.getHeader(ourContext, "Error while updating last modifiedMetadata timestamp", "Item: " + getID()));
         }
     }
 
@@ -1003,9 +991,9 @@ public class Item extends DSpaceObject
             }
         }
 
-        if (dublinCoreChanged || modified)
+        if (modifiedMetadata || modified)
         {
-            // Set the last modified date
+            // Set the last modifiedMetadata date
             itemRow.setColumn("last_modified", new Date());
 
             // Make sure that withdrawn and in_archive are non-null
@@ -1027,15 +1015,17 @@ public class Item extends DSpaceObject
 
             DatabaseManager.update(ourContext, itemRow);
 
-            if (dublinCoreChanged)
+            if (modifiedMetadata)
             {
                 ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.ITEM, getID(), getDetails()));
                 clearDetails();
-                dublinCoreChanged = false;
+                modifiedMetadata = false;
             }
 
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
             modified = false;
+
+            updateMetadata();
         }
     }
 
@@ -1235,6 +1225,8 @@ public class Item extends DSpaceObject
 
         // Finally remove item row
         DatabaseManager.delete(ourContext, itemRow);
+
+        removeMetadataFromDatabase();
     }
     
     private void removeVersion() throws AuthorizeException, SQLException
@@ -1692,8 +1684,7 @@ public class Item extends DSpaceObject
     
     public String getName()
     {
-        DCValue t[] = getMetadata("dc", "title", null, Item.ANY);
-        return (t.length >= 1) ? t[0].value : null;
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     /**

@@ -394,6 +394,7 @@ public class MetadataValue
     public void update(Context context) throws SQLException, AuthorizeException
     {
         row.setColumn("resource_id", resourceId);
+        row.setColumn("resource_type_id", resourceTypeId);
         row.setColumn("metadata_field_id", fieldId);
         row.setColumn("text_value", value);
         row.setColumn("text_lang", language);

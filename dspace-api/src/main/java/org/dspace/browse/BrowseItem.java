@@ -67,8 +67,7 @@ public class BrowseItem extends DSpaceObject
      * @param withdrawn
      */
 	public BrowseItem(Context context, int id, boolean in_archive, boolean withdrawn, boolean discoverable) {
-        super();
-		this.ourContext = context;
+        super(context);
 		this.id = id;
         this.in_archive = in_archive;
         this.withdrawn = withdrawn;
@@ -383,14 +382,13 @@ public class BrowseItem extends DSpaceObject
 
 	public String getName()
     {
-		DCValue t[] = getMetadata("dc", "title", null, Item.ANY);
-		return (t.length >= 1) ? t[0].value : null;
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     @Override
     public void update() throws SQLException, AuthorizeException
     {
-
+        updateMetadata();
     }
 
     @Override
