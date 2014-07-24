@@ -60,6 +60,19 @@
                </execution>
             </executions>
          </plugin>
+          <plugin>
+              <groupId>com.mycila.maven-license-plugin</groupId>
+              <artifactId>maven-license-plugin</artifactId>
+              <configuration>
+                  <!-- Exclude license check for essential config files, these files cannot have a license comment or Mirage 2 will not compile -->
+                  <excludes>
+                      <exclude>**/*.json</exclude>
+                      <exclude>**/*.LICENSE</exclude>
+                      <exclude>**/readme.txt</exclude>
+                      <exclude>**/.bowerrc</exclude>
+                  </excludes>
+              </configuration>
+          </plugin>
 
       </plugins>
    </build>
