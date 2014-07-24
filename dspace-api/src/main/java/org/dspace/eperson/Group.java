@@ -232,7 +232,7 @@ public class Group extends DSpaceObject
      *            new group name
      */
     public void setName(String name) {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY, name);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
     }
 
     /**
@@ -1045,7 +1045,6 @@ public class Group extends DSpaceObject
         log.info(LogManager.getHeader(ourContext, "delete_group", "group_id="
                 + getID()));
 
-        removeMetadataFromDatabase();
     }
 
     /**
@@ -1121,8 +1120,7 @@ public class Group extends DSpaceObject
 
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.GROUP, getID(), getDetails()));
-            modifiedMetadata = false;
+            updateMetadata();
             clearDetails();
         }
 

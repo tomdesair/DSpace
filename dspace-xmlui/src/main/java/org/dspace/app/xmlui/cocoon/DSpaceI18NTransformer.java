@@ -22,7 +22,7 @@ import org.dspace.app.xmlui.configuration.XMLUIConfiguration;
  * that specializes the configuration based upon currently installed
  * aspects.
  * 
- * This transformer modified the base configuration by adding two 
+ * This transformer modified the base configuration by adding two
  * <location/> parameters for each aspect into the default catalogue.
  * The first location parameter is contained within the catalogue's
  * base location + the aspect path. The second location parameter is

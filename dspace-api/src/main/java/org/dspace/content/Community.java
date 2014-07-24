@@ -56,6 +56,9 @@ public class Community extends DSpaceObject
     /** Handle, if any */
     private String handle;
 
+    /** Flag set when data is modified, for events */
+    private boolean modified;
+
     /** The default group of administrators */
     private Group admins;
 
@@ -94,6 +97,8 @@ public class Community extends DSpaceObject
 
         // Cache ourselves
         context.cache(this, row.getIntColumn("community_id"));
+
+        modified = false;
 
         admins = groupFromColumn("admin");
 
@@ -444,7 +449,7 @@ public class Community extends DSpaceObject
         }
         else
         {
-            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
         }
 
         addDetails(field);
@@ -517,7 +522,7 @@ public class Community extends DSpaceObject
                             + newLogo.getID()));
         }
 
-        this.modifiedMetadata = true;
+        modified = true;
         return logo;
     }
 
@@ -533,17 +538,15 @@ public class Community extends DSpaceObject
                 "community_id=" + getID()));
 
         DatabaseManager.update(ourContext, communityRow);
-        updateMetadata();
 
-        if (this.modifiedMetadata)
+        if (modified)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.COMMUNITY, getID(), null));
-            this.modifiedMetadata = false;
+            modified = false;
         }
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.COMMUNITY, getID(), getDetails()));
-            modifiedMetadata = false;
+            updateMetadata();
             clearDetails();
         }
     }
@@ -578,7 +581,7 @@ public class Community extends DSpaceObject
         // register this as the admin group
         communityRow.setColumn("admin", admins.getID());
         
-        this.modifiedMetadata = true;
+        modified = true;
         return admins;
     }
     
@@ -603,7 +606,7 @@ public class Community extends DSpaceObject
         communityRow.setColumnNull("admin");
         admins = null;
        
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -1144,8 +1147,6 @@ public class Community extends DSpaceObject
         }
 
         rawDelete();
-
-        removeMetadataFromDatabase();
     }
     
     /**
@@ -1377,7 +1378,7 @@ public class Community extends DSpaceObject
     @Override
     public void updateLastModified()
     {
-        //Also fire a modifiedMetadata event since the community HAS been modifiedMetadata
+        //Also fire a modified event since the community HAS been modified
         ourContext.addEvent(new Event(Event.MODIFY, Constants.COMMUNITY, getID(), null));
     }
 }

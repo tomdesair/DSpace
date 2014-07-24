@@ -596,8 +596,7 @@ public abstract class DSpaceObject
      * Retrieve first metadata field value
      */
     protected String getMetadataFirstValue(String schema, String element, String qualifier, String language){
-        DCValue[] dcvalues = new DCValue[0];
-        dcvalues = getMetadata(schema, element, qualifier, Item.ANY);
+        DCValue[] dcvalues = getMetadata(schema, element, qualifier, Item.ANY);
         if(dcvalues.length>0){
             return dcvalues[0].value;
         }

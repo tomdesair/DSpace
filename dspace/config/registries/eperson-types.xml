@@ -14,12 +14,6 @@
     </dc-schema>
 
 
-    <!--<dc-type>
-        <schema>eperson</schema>
-        <element>email</element>
-        <scope_note>Metadata field used for the email address</scope_note>
-    </dc-type>-->
-
     <dc-type>
         <schema>eperson</schema>
         <element>firstname</element>

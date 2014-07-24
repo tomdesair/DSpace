@@ -172,7 +172,7 @@ and searching the repository.
 								<map:parameter name="eventType" value="view" />
 							</map:act>
 							<!-- Implement HTTP If-Modified-Since protocol (commonly used by search 
-								- engine crawlers): return 304 NOT MODIFIED status if Item's - last-modified 
+								- engine crawlers): return 304 NOT MODIFIED status if Item's - last-modified
 								date is before If-Modified-Since header. - - NOTE: Do NOT do this for interactive 
 								users since it might encourage - browser to cache a view that is only shown 
 								to authenticated users. - ONLY do this when user-agent is a spider (search-engine 
@@ -235,7 +235,7 @@ and searching the repository.
 								</map:transform>
 								<map:serialize type="xml" />
 							<!-- Implement HTTP If-Modified-Since protocol (commonly used by search 
-								- engine crawlers): return 304 NOT MODIFIED status if Item's - last-modified 
+								- engine crawlers): return 304 NOT MODIFIED status if Item's - last-modified
 								date is before If-Modified-Since header. - - NOTE: Do NOT do this for interactive 
 								users since it might encourage - browser to cache a view that is only shown 
 								to authenticated users. - ONLY do this when user-agent is a spider (search-engine 

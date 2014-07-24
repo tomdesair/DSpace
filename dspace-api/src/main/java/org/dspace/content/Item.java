@@ -1225,8 +1225,6 @@ public class Item extends DSpaceObject
 
         // Finally remove item row
         DatabaseManager.delete(ourContext, itemRow);
-
-        removeMetadataFromDatabase();
     }
     
     private void removeVersion() throws AuthorizeException, SQLException

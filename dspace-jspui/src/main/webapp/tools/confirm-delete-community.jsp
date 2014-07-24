@@ -37,7 +37,7 @@
         <fmt:param><%= community.getID() %></fmt:param>
     </fmt:message></h1>
     
-    <%-- <p>Are you sure the community <strong><%= community.getMetadataByMetadataString("name") %></strong>
+    <%-- <p>Are you sure the community <strong><%= community.getMetadata("name") %></strong>
     should be deleted?  This will delete:</p> --%>
     <p><fmt:message key="jsp.tools.confirm-delete-community.confirm">
         <fmt:param><%= community.getMetadata("name") %></fmt:param>

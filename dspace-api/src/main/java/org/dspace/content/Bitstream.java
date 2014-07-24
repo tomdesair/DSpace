@@ -48,6 +48,8 @@ public class Bitstream extends DSpaceObject
     /** The bitstream format corresponding to this bitstream */
     private BitstreamFormat bitstreamFormat;
 
+    /** Flag set when data is modified, for events */
+    private boolean modified;
 
     /**
      * Private constructor for creating a Bitstream object based on the contents
@@ -83,6 +85,7 @@ public class Bitstream extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("bitstream_id"));
 
+        modified = false;
         clearDetails();
     }
 
@@ -288,7 +291,7 @@ public class Bitstream extends DSpaceObject
      * @return the name of the bitstream
      */
     public String getName(){
-        return getMetadataFirstValue("dc", "title", null, Item.ANY);
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
     }
 
     /**
@@ -298,7 +301,7 @@ public class Bitstream extends DSpaceObject
      *            the new name of the bitstream
      */
     public void setName(String n) {
-        setMetadataFirstValue("dc", "title", null, Item.ANY, n);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, n);
     }
 
     /**
@@ -310,7 +313,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getSource()
     {
-        return getMetadataFirstValue("dc", "source", null, Item.ANY);
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "source", null, Item.ANY);
     }
 
     /**
@@ -320,7 +323,7 @@ public class Bitstream extends DSpaceObject
      *            the new source of the bitstream
      */
     public void setSource(String n) {
-        setMetadataFirstValue("dc", "source", null, Item.ANY, n);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "source", null, null, n);
     }
 
     /**
@@ -331,7 +334,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getDescription()
     {
-        return getMetadataFirstValue("dc", "description", null, Item.ANY);
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "description", null, Item.ANY);
     }
 
     /**
@@ -341,7 +344,7 @@ public class Bitstream extends DSpaceObject
      *            the new description of the bitstream
      */
     public void setDescription(String n) {
-        setMetadataFirstValue("dc", "description", null, Item.ANY, n);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "description", null, null, n);
     }
 
     /**
@@ -383,7 +386,7 @@ public class Bitstream extends DSpaceObject
      * @throws SQLException
      */
     public void setUserFormatDescription(String desc) {
-        setMetadataFirstValue("dc", "format", null, Item.ANY, desc);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "format", null, null, desc);
     }
 
     /**
@@ -394,7 +397,7 @@ public class Bitstream extends DSpaceObject
      */
     public String getUserFormatDescription()
     {
-        return getMetadataFirstValue("dc", "format", null, Item.ANY);
+        return getMetadataFirstValue(MetadataSchema.DC_SCHEMA, "format", null, Item.ANY);
     }
 
     /**
@@ -461,7 +464,7 @@ public class Bitstream extends DSpaceObject
 
         // Update the ID in the table row
         bRow.setColumn("bitstream_format_id", bitstreamFormat.getID());
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -479,20 +482,19 @@ public class Bitstream extends DSpaceObject
         log.info(LogManager.getHeader(ourContext, "update_bitstream",
                 "bitstream_id=" + getID()));
 
-        if (this.modifiedMetadata)
+        DatabaseManager.update(ourContext, bRow);
+
+        if (modified)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.BITSTREAM, getID(), null));
-            this.modifiedMetadata = false;
+            modified = false;
         }
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.BITSTREAM, getID(), getDetails()));
-            modifiedMetadata = false;
+            updateMetadata();
             clearDetails();
         }
 
-        DatabaseManager.update(ourContext, bRow);
-        updateMetadata();
     }
 
     /**
@@ -721,7 +723,7 @@ public class Bitstream extends DSpaceObject
     @Override
     public void updateLastModified()
     {
-        //Also fire a modifiedMetadata event since the bitstream HAS been modifiedMetadata
+        //Also fire a modified event since the bitstream HAS been modified
         ourContext.addEvent(new Event(Event.MODIFY, Constants.BITSTREAM, getID(), null));
     }
 }

@@ -48,6 +48,8 @@ public class Bundle extends DSpaceObject
     /** The bitstreams in this bundle */
     private List<Bitstream> bitstreams;
 
+    /** Flag set when data is modified, for events */
+    private boolean modified;
 
     /**
      * Construct a bundle object with the given table row
@@ -125,6 +127,7 @@ public class Bundle extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("bundle_id"));
 
+        modified = false;
     }
 
     /**
@@ -225,7 +228,7 @@ public class Bundle extends DSpaceObject
      */
     public void setName(String name)
     {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY, name);
+        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
     }
 
     /**
@@ -247,7 +250,7 @@ public class Bundle extends DSpaceObject
     public void setPrimaryBitstreamID(int bitstreamID)
     {
         bundleRow.setColumn("primary_bitstream_id", bitstreamID);
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -490,7 +493,7 @@ public class Bundle extends DSpaceObject
             bitstreams.add(bitstreamMap.get(bitstreamId));
         }
 
-        //The order of the bitstreams has changed, ensure that we update the last modifiedMetadata of our item
+        //The order of the bitstreams has changed, ensure that we update the last modified of our item
         Item owningItem = (Item) getParentObject();
         if(owningItem != null)
         {
@@ -537,7 +540,7 @@ public class Bundle extends DSpaceObject
 
         ourContext.addEvent(new Event(Event.REMOVE, Constants.BUNDLE, getID(), Constants.BITSTREAM, b.getID(), String.valueOf(b.getSequenceID())));
 
-        //Ensure that the last modifiedMetadata from the item is triggered !
+        //Ensure that the last modified from the item is triggered !
         Item owningItem = (Item) getParentObject();
         if(owningItem != null)
         {
@@ -593,19 +596,17 @@ public class Bundle extends DSpaceObject
         log.info(LogManager.getHeader(ourContext, "update_bundle", "bundle_id="
                 + getID()));
 
-        if (this.modifiedMetadata)
+        DatabaseManager.update(ourContext, bundleRow);
+
+        if (modified)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.BUNDLE, getID(), null));
-            this.modifiedMetadata = false;
+            modified = false;
         }
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.BUNDLE, getID(), null));
-            modifiedMetadata = false;
+            updateMetadata();
         }
-
-        DatabaseManager.update(ourContext, bundleRow);
-        updateMetadata();
     }
 
     /**

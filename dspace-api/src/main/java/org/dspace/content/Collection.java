@@ -69,6 +69,8 @@ public class Collection extends DSpaceObject
     /** Our Handle */
     private String handle;
 
+    /** Flag set when data is modified, for events */
+    private boolean modified;
 
     /**
      * Groups corresponding to workflow steps - NOTE these start from one, so
@@ -141,6 +143,7 @@ public class Collection extends DSpaceObject
         // Cache ourselves
         context.cache(this, row.getIntColumn("collection_id"));
 
+        modified = false;
         clearDetails();
     }
 
@@ -542,7 +545,7 @@ public class Collection extends DSpaceObject
         }
         else
         {
-            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
         }
 
         addDetails(field);
@@ -622,7 +625,7 @@ public class Collection extends DSpaceObject
                             + newLogo.getID()));
         }
 
-        this.modifiedMetadata = true;
+        modified = true;
         return logo;
     }
 
@@ -685,7 +688,7 @@ public class Collection extends DSpaceObject
         {
             collectionRow.setColumn("workflow_step_" + step, g.getID());
         }
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -734,7 +737,7 @@ public class Collection extends DSpaceObject
 
         AuthorizeManager.addPolicy(ourContext, this, Constants.ADD, submitters);
 
-        this.modifiedMetadata = true;
+        modified = true;
         return submitters;
     }
 
@@ -759,7 +762,7 @@ public class Collection extends DSpaceObject
         collectionRow.setColumnNull("submitter");
         submitters = null;
 
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
 
@@ -810,7 +813,7 @@ public class Collection extends DSpaceObject
         // register this as the admin group
         collectionRow.setColumn("admin", admins.getID());
 
-        this.modifiedMetadata = true;
+        modified = true;
         return admins;
     }
 
@@ -835,7 +838,7 @@ public class Collection extends DSpaceObject
         collectionRow.setColumnNull("admin");
         admins = null;
 
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -944,7 +947,7 @@ public class Collection extends DSpaceObject
                     "collection_id=" + getID() + ",template_item_id="
                             + template.getID()));
         }
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -1068,17 +1071,15 @@ public class Collection extends DSpaceObject
                 "collection_id=" + getID()));
 
         DatabaseManager.update(ourContext, collectionRow);
-        updateMetadata();
 
-        if (this.modifiedMetadata)
+        if (modified)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.COLLECTION, getID(), null));
-            this.modifiedMetadata = false;
+            modified = false;
         }
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.COLLECTION, getID(), getDetails()));
-            modifiedMetadata = false;
+            updateMetadata();
             clearDetails();
         }
     }
@@ -1579,7 +1580,7 @@ public class Collection extends DSpaceObject
     @Override
     public void updateLastModified()
     {
-        //Also fire a modifiedMetadata event since the collection HAS been modifiedMetadata
+        //Also fire a modified event since the collection HAS been modified
         ourContext.addEvent(new Event(Event.MODIFY, Constants.COLLECTION, getID(), null));
     }
 }

@@ -65,6 +65,8 @@ public class EPerson extends DSpaceObject
     /** The row in the table representing this eperson */
     private TableRow myRow;
 
+    /** Flag set when data is modified, for events */
+    private boolean modified;
 
     /**
      * Construct an EPerson
@@ -80,6 +82,7 @@ public class EPerson extends DSpaceObject
 
         // Cache ourselves
         context.cache(this, row.getIntColumn("eperson_id"));
+        modified = false;
         clearDetails();
     }
 
@@ -282,9 +285,9 @@ public class EPerson extends DSpaceObject
         StringBuffer queryBuf = new StringBuffer();
         queryBuf.append("SELECT * FROM ( select eperson.*, " +
                 "(select text_value as fn from metadatavalue where resource_id=? and resource_type_id=? and metadata_field_id=?) fn, " +
-                "(select text_value as fn from metadatavalue where resource_id=? and resource_type_id=? and metadata_field_id=?) ln, " +
+                "(select text_value as fn from metadatavalue where resource_id=? and resource_type_id=? and metadata_field_id=?) ln " +
                 "from eperson ) as sub WHERE eperson_id = ? OR " +
-                "LOWER(fn) LIKE LOWER(?) OR LOWER(ln) LIKE LOWER(?) OR LOWER(eperson.email) LIKE LOWER(?) ORDER BY ln, fn ASC ");
+                "LOWER(fn) LIKE LOWER(?) OR LOWER(ln) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) ORDER BY ln, fn ASC ");
 
         // Add offset and limit restrictions - Oracle requires special code
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
@@ -473,33 +476,47 @@ public class EPerson extends DSpaceObject
     public static EPerson[] findAll(Context context, int sortField)
             throws SQLException
     {
-        String s;
+        String s, t = "", theQuery = "";
 
         switch (sortField)
         {
         case ID:
-            s = "eperson_id";
+            s = "e.eperson_id";
             break;
 
         case EMAIL:
-            s = "email";
+            s = "e.email";
             break;
 
         case LANGUAGE:
-            s = "language";
+            s = "m_text_value";
+            t = "language";
             break;
         case NETID:
-            s = "netid";
+            s = "m_text_value";
+            t = "netid";
             break;
 
         default:
-            s = "lastname";
+            s = "m_text_value";
+            t = "lastname";
         }
 
-        // NOTE: The use of 's' in the order by clause can not cause an SQL 
+        // NOTE: The use of 's' in the order by clause can not cause an SQL
         // injection because the string is derived from constant values above.
-        TableRowIterator rows = DatabaseManager.query(context, 
-                "SELECT * FROM eperson ORDER BY "+s);
+        TableRowIterator rows = DatabaseManager.query(context, "SELECT * FROM eperson e ORDER BY ?",s);
+        if(t!="") {
+            rows = DatabaseManager.query(context,
+                    "SELECT * FROM eperson e " +
+                            "JOIN metadatavalue m on (m.resource_id = e.eperson_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                            "ORDER BY ?",
+                    Constants.EPERSON,
+                    MetadataField.findByElement(context, MetadataSchema.find(context, "eperson").getSchemaID(), t, null).getFieldID(),
+                    s
+            );
+        }
+
+
 
         try
         {
@@ -647,7 +664,7 @@ public class EPerson extends DSpaceObject
      *            language code
      */
      public void setLanguage(String language) {
-         setMetadataFirstValue("eperson", "language", null, Item.ANY, language);
+         setMetadataFirstValue("eperson", "language", null, null, language);
      }
   
 
@@ -686,7 +703,7 @@ public class EPerson extends DSpaceObject
         }
 
         myRow.setColumn("email", s);
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -706,7 +723,8 @@ public class EPerson extends DSpaceObject
      *            the new netid
      */
     public void setNetid(String s) {
-        setMetadataFirstValue("eperson", "netid", null, Item.ANY, s);
+        setMetadataFirstValue("eperson", "netid", null, null, s);
+        modified = true;
     }
 
     /**
@@ -751,7 +769,8 @@ public class EPerson extends DSpaceObject
      *            the person's first name
      */
     public void setFirstName(String firstname) {
-        setMetadataFirstValue("eperson", "firstname", null, Item.ANY, firstname);
+        setMetadataFirstValue("eperson", "firstname", null, null, firstname);
+        modified = true;
     }
 
     /**
@@ -771,7 +790,8 @@ public class EPerson extends DSpaceObject
      *            the person's last name
      */
     public void setLastName(String lastname) {
-        setMetadataFirstValue("eperson", "lastname", null, Item.ANY, lastname);
+        setMetadataFirstValue("eperson", "lastname", null, null, lastname);
+        modified = true;
     }
 
     /**
@@ -783,7 +803,7 @@ public class EPerson extends DSpaceObject
     public void setCanLogIn(boolean login)
     {
         myRow.setColumn("can_log_in", login);
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -805,7 +825,7 @@ public class EPerson extends DSpaceObject
     public void setRequireCertificate(boolean isrequired)
     {
         myRow.setColumn("require_certificate", isrequired);
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -827,7 +847,7 @@ public class EPerson extends DSpaceObject
     public void setSelfRegistered(boolean sr)
     {
         myRow.setColumn("self_registered", sr);
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -875,7 +895,7 @@ public class EPerson extends DSpaceObject
     public void setMetadata(String field, String value)
     {
         String[] MDValue = getMDValueByField(field);
-        setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY, value);
+        setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
     }
 
     /**
@@ -890,7 +910,7 @@ public class EPerson extends DSpaceObject
         myRow.setColumn("password", Utils.toHex(hash.getHash()));
         myRow.setColumn("salt", Utils.toHex(hash.getSalt()));
         myRow.setColumn("digest_algorithm", hash.getAlgorithm());
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -913,7 +933,7 @@ public class EPerson extends DSpaceObject
             myRow.setColumn("salt", password.getSaltString());
             myRow.setColumn("password", password.getHashString());
         }
-        this.modifiedMetadata = true;
+        modified = true;
     }
 
     /**
@@ -1013,20 +1033,18 @@ public class EPerson extends DSpaceObject
         }
 
         DatabaseManager.update(ourContext, myRow);
-        updateMetadata();
 
         log.info(LogManager.getHeader(ourContext, "update_eperson",
                 "eperson_id=" + getID()));
 
-        if (this.modifiedMetadata)
+        if (modified)
         {
             ourContext.addEvent(new Event(Event.MODIFY, Constants.EPERSON, getID(), null));
-            this.modifiedMetadata = false;
+            modified = false;
         }
         if (modifiedMetadata)
         {
-            ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.EPERSON, getID(), getDetails()));
-            modifiedMetadata = false;
+            updateMetadata();
             clearDetails();
         }
     }
