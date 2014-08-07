@@ -1,8 +1,8 @@
 package org.dspace.content.authority;
 
-import com.atmire.authority.AuthoritySearchService;
-import com.atmire.authority.AuthorityValue;
-import com.atmire.authority.rest.RestSource;
+import org.dspace.authority.AuthoritySearchService;
+import org.dspace.authority.AuthorityValue;
+import org.dspace.authority.rest.RestSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;

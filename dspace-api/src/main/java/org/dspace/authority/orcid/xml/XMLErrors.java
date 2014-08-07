@@ -1,6 +1,13 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.authority.orcid.xml;
 
-import com.atmire.authority.util.XMLUtils;
+import org.dspace.authority.util.XMLUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 

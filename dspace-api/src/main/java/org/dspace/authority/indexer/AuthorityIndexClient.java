@@ -1,6 +1,13 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.authority.indexer;
 
-import com.atmire.authority.AuthorityValue;
+import org.dspace.authority.AuthorityValue;
 import org.apache.log4j.Logger;
 import org.dspace.content.Item;
 import org.dspace.core.Context;

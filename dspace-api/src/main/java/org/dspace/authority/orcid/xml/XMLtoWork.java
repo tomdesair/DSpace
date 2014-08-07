@@ -1,7 +1,14 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.authority.orcid.xml;
 
-import com.atmire.authority.orcid.model.*;
-import com.atmire.authority.util.*;
+import org.dspace.authority.orcid.model.*;
+import org.dspace.authority.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;

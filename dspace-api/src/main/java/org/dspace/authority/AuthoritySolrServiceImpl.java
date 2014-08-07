@@ -1,10 +1,10 @@
 package org.dspace.authority;
 
-import com.atmire.authority.indexer.AuthorityIndexingService;
+import org.dspace.authority.indexer.AuthorityIndexingService;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -28,16 +28,16 @@ public class AuthoritySolrServiceImpl implements AuthorityIndexingService, Autho
     /**
      * Non-Static CommonsHttpSolrServer for processing indexing events.
      */
-    protected CommonsHttpSolrServer solr = null;
+    protected HttpSolrServer solr = null;
 
-    protected CommonsHttpSolrServer getSolr() throws MalformedURLException, SolrServerException {
+    protected HttpSolrServer getSolr() throws MalformedURLException, SolrServerException {
         if (solr == null) {
 
             String solrService = ConfigurationManager.getProperty("solr.authority.server");
 
             log.debug("Solr authority URL: " + solrService);
 
-            solr = new CommonsHttpSolrServer(solrService);
+            solr = new HttpSolrServer(solrService);
             solr.setBaseURL(solrService);
 
             SolrQuery solrQuery = new SolrQuery().setQuery("*:*");

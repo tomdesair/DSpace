@@ -1,11 +1,18 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.authority.orcid;
 
-import com.atmire.authority.AuthorityValue;
-import com.atmire.authority.orcid.model.Bio;
-import com.atmire.authority.orcid.model.Work;
-import com.atmire.authority.orcid.xml.XMLtoBio;
-import com.atmire.authority.orcid.xml.XMLtoWork;
-import com.atmire.authority.rest.RestSource;
+import org.dspace.authority.AuthorityValue;
+import org.dspace.authority.orcid.model.Bio;
+import org.dspace.authority.orcid.model.Work;
+import org.dspace.authority.orcid.xml.XMLtoBio;
+import org.dspace.authority.orcid.xml.XMLtoWork;
+import org.dspace.authority.rest.RestSource;
 import org.apache.log4j.Logger;
 import org.dspace.utils.DSpace;
 import org.w3c.dom.Document;
