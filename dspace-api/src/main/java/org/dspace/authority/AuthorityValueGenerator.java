@@ -20,8 +20,10 @@ import java.util.UUID;
  * creates an AuthorityValue instance of the appropriate type
  * and then generates another instance using ‹AuthorityValue›.newInstance(info).
  *
- * Created by: Antoine Snyers (antoine at atmire dot com)
- * Date: 07 Mar 2014
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class AuthorityValueGenerator {
 

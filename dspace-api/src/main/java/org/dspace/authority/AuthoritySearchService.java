@@ -15,9 +15,11 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 /**
- * User: kevin (kevin at atmire.com)
- * Date: 7-dec-2010
- * Time: 10:13:07
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public interface AuthoritySearchService {
 

@@ -22,11 +22,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This script updates orcid records in solr.
- * Items having metadata with updated authorities can be updated if the auto-update-items property is set to true in solrauthority.cfg
  *
- * Created by: Antoine Snyers (antoine at atmire dot com)
- * Date: 23 Dec 2013
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class UpdateAuthorities {
 

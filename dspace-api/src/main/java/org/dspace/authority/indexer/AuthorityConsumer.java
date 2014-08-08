@@ -19,9 +19,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * User: kevin (kevin at atmire.com)
- * Date: 25-mrt-2011
- * Time: 11:11:41
+ * Consumer that takes care of the indexing of authority controlled metadata fields for installed/updated items
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class AuthorityConsumer implements Consumer {
 

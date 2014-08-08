@@ -1,3 +1,10 @@
+/**
+ * The contents of this file are subject to the license and copyright
+ * detailed in the LICENSE and NOTICE files at the root of the source
+ * tree and available online at
+ *
+ * http://www.dspace.org/license/
+ */
 package org.dspace.content.authority;
 
 import org.dspace.authority.AuthoritySearchService;
@@ -19,9 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User: kevin (kevin at atmire.com)
- * Date: 6-dec-2010
- * Time: 13:37:50
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class SolrAuthority implements ChoiceAuthority {
 

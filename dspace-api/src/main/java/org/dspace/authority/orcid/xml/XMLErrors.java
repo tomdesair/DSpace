@@ -14,8 +14,11 @@ import org.w3c.dom.Document;
 import javax.xml.xpath.XPathExpressionException;
 
 /**
- * Created by: Antoine Snyers (antoine at atmire dot com)
- * Date: 16 Dec 2013
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class XMLErrors {
 

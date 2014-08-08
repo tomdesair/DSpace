@@ -12,8 +12,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Created by: Antoine Snyers (antoine at atmire dot com)
- * Date: 12 Dec 2013
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
 public class Bio {
 

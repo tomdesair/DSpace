@@ -12,10 +12,12 @@ import org.dspace.authority.AuthorityValue;
 import java.util.List;
 
 /**
- * Created by: Antoine Snyers (antoine at atmire dot com)
- * Date: 06 Mar 2014
+ *
+ * @author Antoine Snyers (antoine at atmire.com)
+ * @author Kevin Van de Velde (kevin at atmire dot com)
+ * @author Ben Bosman (ben at atmire dot com)
+ * @author Mark Diggory (markd at atmire dot com)
  */
-
 public abstract class RestSource {
 
     protected RESTConnector restConnector;
