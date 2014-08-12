@@ -102,8 +102,7 @@ public class Site extends DSpaceObject
     void delete()
         throws SQLException, AuthorizeException, IOException
     {
-        // Delete the Dublin Core
-        removeMetadataFromDatabase();
+
     }
 
     public void update()

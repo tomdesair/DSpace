@@ -171,7 +171,7 @@ public class Item extends DSpaceObject
         // set discoverable to true (default)
         i.setDiscoverable(true);
 
-        // Call update to give the item a last modifiedMetadata date. OK this isn't
+        // Call update to give the item a last modified date. OK this isn't
         // amazingly efficient but creates don't happen that often.
         context.turnOffAuthorisationSystem();
         i.update();
@@ -306,10 +306,10 @@ public class Item extends DSpaceObject
     }
 
     /**
-     * Get the date the item was last modifiedMetadata, or the current date if
+     * Get the date the item was last modified, or the current date if
      * last_modified is null
      *
-     * @return the date the item was last modifiedMetadata, or the current date if the
+     * @return the date the item was last modified, or the current date if the
      *         column is null.
      */
     public Date getLastModified()
@@ -325,7 +325,7 @@ public class Item extends DSpaceObject
     }
 
     /**
-     * Method that updates the last modifiedMetadata date of the item
+     * Method that updates the last modified date of the item
      */
     public void updateLastModified()
     {
@@ -333,10 +333,10 @@ public class Item extends DSpaceObject
             Date lastModified = new Timestamp(new Date().getTime());
             itemRow.setColumn("last_modified", lastModified);
             DatabaseManager.updateQuery(ourContext, "UPDATE item SET last_modified = ? WHERE item_id= ? ", lastModified, getID());
-            //Also fire a modifiedMetadata event since the item HAS been modifiedMetadata
+            //Also fire a modified event since the item HAS been modified
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
         } catch (SQLException e) {
-            log.error(LogManager.getHeader(ourContext, "Error while updating last modifiedMetadata timestamp", "Item: " + getID()));
+            log.error(LogManager.getHeader(ourContext, "Error while updating last modified timestamp", "Item: " + getID()));
         }
     }
 
@@ -1015,11 +1015,9 @@ public class Item extends DSpaceObject
 
             DatabaseManager.update(ourContext, itemRow);
 
-            if (modifiedMetadata)
-            {
-                ourContext.addEvent(new Event(Event.MODIFY_METADATA, Constants.ITEM, getID(), getDetails()));
+            if (modifiedMetadata) {
+                updateMetadata();
                 clearDetails();
-                modifiedMetadata = false;
             }
 
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));

@@ -266,7 +266,10 @@ public abstract class DSpaceObject
             }
         }
 
-        ourContext.addEvent(new Event(Event.MODIFY_METADATA, getType(), getID(), getDetails()));
+        if(modifiedMetadata) {
+            ourContext.addEvent(new Event(Event.MODIFY_METADATA, getType(), getID(), getDetails()));
+            modifiedMetadata = false;
+        }
     }
 
     /**
