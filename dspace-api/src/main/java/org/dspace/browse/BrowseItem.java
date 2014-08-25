@@ -84,6 +84,7 @@ public class BrowseItem extends DSpaceObject
 	 * @return			array of matching values
 	 * @throws SQLException
 	 */
+    @Deprecated
 	public DCValue[] getMetadata(String schema, String element, String qualifier, String lang) {
         try
         {
@@ -388,7 +389,6 @@ public class BrowseItem extends DSpaceObject
     @Override
     public void update() throws SQLException, AuthorizeException
     {
-        updateMetadata();
     }
 
     @Override

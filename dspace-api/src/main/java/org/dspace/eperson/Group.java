@@ -1155,7 +1155,6 @@ public class Group extends DSpaceObject
             DatabaseManager.updateQuery(ourContext,
                     "delete from group2group where parent_id= ? ",
                     getID());
-            updateMetadata();
 
             // Add new mappings
             Iterator<Group> i = groups.iterator();

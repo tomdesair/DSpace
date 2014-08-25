@@ -500,6 +500,7 @@ public class Collection extends DSpaceObject
      * @exception IllegalArgumentException
      *                if the requested metadata field doesn't exist
      */
+    @Deprecated
     public String getMetadata(String field)
     {
         String[] MDValue = getMDValueByLegacyField(field);
@@ -518,6 +519,7 @@ public class Collection extends DSpaceObject
      *                if the requested metadata field doesn't exist
      * @exception MissingResourceException
      */
+    @Deprecated
     public void setMetadata(String field, String value) throws MissingResourceException {
         if ((field.trim()).equals("name") && (value == null || value.trim().equals("")))
         {

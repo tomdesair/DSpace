@@ -892,6 +892,7 @@ public class EPerson extends DSpaceObject
      * @exception IllegalArgumentException
      *                if the requested metadata field doesn't exist
      */
+    @Deprecated
     public void setMetadata(String field, String value)
     {
         String[] MDValue = getMDValueByField(field);

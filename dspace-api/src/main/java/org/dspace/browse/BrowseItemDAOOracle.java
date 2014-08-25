@@ -7,6 +7,7 @@
  */
 package org.dspace.browse;
 
+import org.dspace.core.Constants;
 import org.dspace.storage.rdbms.TableRowIterator;
 import org.dspace.storage.rdbms.DatabaseManager;
 import org.dspace.storage.rdbms.TableRow;
@@ -32,6 +33,7 @@ public class BrowseItemDAOOracle implements BrowseItemDAO
                                     " AND metadatafieldregistry.qualifier IS NULL " +
                                     " AND metadatafieldregistry.metadata_schema_id=metadataschemaregistry.metadata_schema_id " +
                                     " AND metadataschemaregistry.short_id = ? " +
+                                    " AND metadatavalue.resource_type_id = ? " +
                                     " ORDER BY metadatavalue.metadata_field_id, metadatavalue.place";
 
     /** query to get the text value of a metadata element and qualifier */
@@ -42,6 +44,7 @@ public class BrowseItemDAOOracle implements BrowseItemDAO
                                     " AND metadatafieldregistry.qualifier = ? " +
                                     " AND metadatafieldregistry.metadata_schema_id=metadataschemaregistry.metadata_schema_id " +
                                     " AND metadataschemaregistry.short_id = ? " +
+                                    " AND metadatavalue.resource_type_id = ? " +
                                     " ORDER BY metadatavalue.metadata_field_id, metadatavalue.place";
 
     /** query to get the text value of a metadata element with the wildcard qualifier (*) */
@@ -51,6 +54,7 @@ public class BrowseItemDAOOracle implements BrowseItemDAO
                                     " AND metadatafieldregistry.element = ? " +
                                     " AND metadatafieldregistry.metadata_schema_id=metadataschemaregistry.metadata_schema_id " +
                                     " AND metadataschemaregistry.short_id = ? " +
+                                    " AND metadatavalue.resource_type_id = ? " +
                                     " ORDER BY metadatavalue.metadata_field_id, metadatavalue.place";
 
     /** DSpace context */
@@ -101,17 +105,17 @@ public class BrowseItemDAOOracle implements BrowseItemDAO
         {
             if (qualifier == null)
             {
-                Object[] params = { Integer.valueOf(itemId), element, schema };
+                Object[] params = { Integer.valueOf(itemId), element, schema, Constants.ITEM };
                 tri = DatabaseManager.query(context, getByMetadataElement, params);
             }
             else if (Item.ANY.equals(qualifier))
             {
-                Object[] params = { Integer.valueOf(itemId), element, schema };
+                Object[] params = { Integer.valueOf(itemId), element, schema, Constants.ITEM };
                 tri = DatabaseManager.query(context, getByMetadataAnyQualifier, params);
             }
             else
             {
-                Object[] params = { Integer.valueOf(itemId), element, qualifier, schema };
+                Object[] params = { Integer.valueOf(itemId), element, qualifier, schema, Constants.ITEM };
                 tri = DatabaseManager.query(context, getByMetadata, params);
             }
 

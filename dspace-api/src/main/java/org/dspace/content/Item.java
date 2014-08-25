@@ -993,7 +993,7 @@ public class Item extends DSpaceObject
 
         if (modifiedMetadata || modified)
         {
-            // Set the last modifiedMetadata date
+            // Set the last modified date
             itemRow.setColumn("last_modified", new Date());
 
             // Make sure that withdrawn and in_archive are non-null
@@ -1022,8 +1022,6 @@ public class Item extends DSpaceObject
 
             ourContext.addEvent(new Event(Event.MODIFY, Constants.ITEM, getID(), null));
             modified = false;
-
-            updateMetadata();
         }
     }
 

@@ -610,8 +610,8 @@ public abstract class DSpaceObject
      * Set first metadata field value
      */
     protected void setMetadataFirstValue(String schema, String element, String qualifier, String language, String value) {
-        clearMetadata(MetadataSchema.DC_SCHEMA, "description", null, Item.ANY);
-        addMetadata(MetadataSchema.DC_SCHEMA, "description", null, Item.ANY, value);
+        clearMetadata(schema, element, qualifier, language);
+        addMetadata(schema, element, qualifier, language, value);
         modifiedMetadata = true;
     }
 

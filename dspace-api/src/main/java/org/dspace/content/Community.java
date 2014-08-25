@@ -421,6 +421,7 @@ public class Community extends DSpaceObject
      *                if the requested metadata field doesn't exist
      * @exception MissingResourceException
      */
+    @Deprecated
     public void setMetadata(String field, String value) throws MissingResourceException {
         if ((field.trim()).equals("name")
                 && (value == null || value.trim().equals("")))

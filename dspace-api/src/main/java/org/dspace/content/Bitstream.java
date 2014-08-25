@@ -385,7 +385,8 @@ public class Bitstream extends DSpaceObject
      *            the user's description of the format
      * @throws SQLException
      */
-    public void setUserFormatDescription(String desc) {
+    public void setUserFormatDescription(String desc) throws SQLException {
+        setFormat(null);
         setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "format", null, null, desc);
     }
 
