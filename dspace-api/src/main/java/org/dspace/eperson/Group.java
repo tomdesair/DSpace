@@ -232,7 +232,7 @@ public class Group extends DSpaceObject
      *            new group name
      */
     public void setName(String name) {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
     }
 
     /**
@@ -753,9 +753,9 @@ public class Group extends DSpaceObject
 
         // NOTE: The use of 's' in the order by clause can not cause an SQL 
         // injection because the string is derived from constant values above.
-        TableRowIterator rows = DatabaseManager.queryTable(
-        		context, "epersongroup",
-                "select * from epersongroup e " +
+        TableRowIterator rows = DatabaseManager.query(
+                context,
+                "select e.* from epersongroup e " +
                         "JOIN metadatavalue m on (m.resource_id = e.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                         "order by ?",
                 Constants.GROUP,

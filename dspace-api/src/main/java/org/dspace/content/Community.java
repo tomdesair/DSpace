@@ -251,8 +251,8 @@ public class Community extends DSpaceObject
     {
         TableRowIterator tri = null;
         try {
-            tri = DatabaseManager.queryTable(context, "community",
-                    "SELECT * FROM community c " +
+            tri = DatabaseManager.query(context,
+                    "SELECT c.* FROM community c " +
                             "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "ORDER BY m.text_value",
                     Constants.COMMUNITY,
@@ -315,7 +315,7 @@ public class Community extends DSpaceObject
         // get all communities that are not children
         TableRowIterator tri = null;
         try {
-            tri = DatabaseManager.queryTable(context, "community",
+            tri = DatabaseManager.query(context,
                     "SELECT c.* FROM community c  "
                             + "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
                             + "WHERE NOT c.community_id IN (SELECT child_comm_id FROM community2community) "
@@ -450,7 +450,7 @@ public class Community extends DSpaceObject
         }
         else
         {
-            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
+            setMetadataSingleValue(MDValue[0], MDValue[1], MDValue[2], null, value);
         }
 
         addDetails(field);
@@ -639,8 +639,8 @@ public class Community extends DSpaceObject
         // Get the table rows
         TableRowIterator tri = null;
         try {
-            tri = DatabaseManager.queryTable(
-                    ourContext, "collection",
+            tri = DatabaseManager.query(
+                    ourContext,
                     "SELECT c.* FROM community2collection c2c, collection c "
                             + "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
                             + "WHERE c2c.collection_id=c.collection_id AND c2c.community_id=? "
@@ -705,8 +705,8 @@ public class Community extends DSpaceObject
         // Get the table rows
         TableRowIterator tri = null;
         try {
-            tri = DatabaseManager.queryTable(
-                    ourContext, "community",
+            tri = DatabaseManager.query(
+                    ourContext,
                     "SELECT c.* FROM community2community c2c, community c " +
                             "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "WHERE c2c.child_comm_id=c.community_id " +

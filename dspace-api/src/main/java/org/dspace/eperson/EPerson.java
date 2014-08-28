@@ -664,7 +664,7 @@ public class EPerson extends DSpaceObject
      *            language code
      */
      public void setLanguage(String language) {
-         setMetadataFirstValue("eperson", "language", null, null, language);
+         setMetadataSingleValue("eperson", "language", null, null, language);
      }
   
 
@@ -723,7 +723,7 @@ public class EPerson extends DSpaceObject
      *            the new netid
      */
     public void setNetid(String s) {
-        setMetadataFirstValue("eperson", "netid", null, null, s);
+        setMetadataSingleValue("eperson", "netid", null, null, s);
         modified = true;
     }
 
@@ -769,7 +769,7 @@ public class EPerson extends DSpaceObject
      *            the person's first name
      */
     public void setFirstName(String firstname) {
-        setMetadataFirstValue("eperson", "firstname", null, null, firstname);
+        setMetadataSingleValue("eperson", "firstname", null, null, firstname);
         modified = true;
     }
 
@@ -790,7 +790,7 @@ public class EPerson extends DSpaceObject
      *            the person's last name
      */
     public void setLastName(String lastname) {
-        setMetadataFirstValue("eperson", "lastname", null, null, lastname);
+        setMetadataSingleValue("eperson", "lastname", null, null, lastname);
         modified = true;
     }
 
@@ -874,11 +874,8 @@ public class EPerson extends DSpaceObject
     @Deprecated
     public String getMetadata(String field)
     {
-        String[] MDValue = getMDValueByField(field);
-        DCValue[] dcvalues = getMetadata(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
-        return dcvalues.toString();
-
-        //return myRow.getStringColumn(field);
+        String[] MDValue = getMDValueByLegacyField(field);
+        return getMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], Item.ANY);
     }
 
     /**
@@ -895,8 +892,8 @@ public class EPerson extends DSpaceObject
     @Deprecated
     public void setMetadata(String field, String value)
     {
-        String[] MDValue = getMDValueByField(field);
-        setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
+        String[] MDValue = getMDValueByLegacyField(field);
+        setMetadataSingleValue(MDValue[0], MDValue[1], MDValue[2], null, value);
     }
 
     /**

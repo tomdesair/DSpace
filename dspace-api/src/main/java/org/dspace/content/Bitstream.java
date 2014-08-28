@@ -301,7 +301,7 @@ public class Bitstream extends DSpaceObject
      *            the new name of the bitstream
      */
     public void setName(String n) {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, n);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "title", null, null, n);
     }
 
     /**
@@ -323,7 +323,7 @@ public class Bitstream extends DSpaceObject
      *            the new source of the bitstream
      */
     public void setSource(String n) {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "source", null, null, n);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "source", null, null, n);
     }
 
     /**
@@ -344,7 +344,7 @@ public class Bitstream extends DSpaceObject
      *            the new description of the bitstream
      */
     public void setDescription(String n) {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "description", null, null, n);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "description", null, null, n);
     }
 
     /**
@@ -387,7 +387,7 @@ public class Bitstream extends DSpaceObject
      */
     public void setUserFormatDescription(String desc) throws SQLException {
         setFormat(null);
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "format", null, null, desc);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "format", null, null, desc);
     }
 
     /**
@@ -461,7 +461,7 @@ public class Bitstream extends DSpaceObject
         }
 
         // Remove user type description
-        bRow.setColumnNull("user_format_description");
+        clearMetadata(MetadataSchema.DC_SCHEMA,"format",null, Item.ANY);
 
         // Update the ID in the table row
         bRow.setColumn("bitstream_format_id", bitstreamFormat.getID());
@@ -595,10 +595,10 @@ public class Bitstream extends DSpaceObject
     {
         // Get the bundle table rows
         TableRowIterator tri = DatabaseManager.queryTable(ourContext, "bundle",
-                "SELECT bundle.* FROM bundle, bundle2bitstream WHERE " + 
-                "bundle.bundle_id=bundle2bitstream.bundle_id AND " +
-                "bundle2bitstream.bitstream_id= ? ",
-                 bRow.getIntColumn("bitstream_id"));
+                "SELECT bundle.* FROM bundle, bundle2bitstream WHERE " +
+                        "bundle.bundle_id=bundle2bitstream.bundle_id AND " +
+                        "bundle2bitstream.bitstream_id= ? ",
+                bRow.getIntColumn("bitstream_id"));
 
         // Build a list of Bundle objects
         List<Bundle> bundles = new ArrayList<Bundle>();

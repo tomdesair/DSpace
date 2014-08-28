@@ -228,7 +228,7 @@ public class Bundle extends DSpaceObject
      */
     public void setName(String name)
     {
-        setMetadataFirstValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
+        setMetadataSingleValue(MetadataSchema.DC_SCHEMA, "title", null, null, name);
     }
 
     /**

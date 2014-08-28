@@ -609,10 +609,13 @@ public abstract class DSpaceObject
     /**
      * Set first metadata field value
      */
-    protected void setMetadataFirstValue(String schema, String element, String qualifier, String language, String value) {
-        clearMetadata(schema, element, qualifier, language);
-        addMetadata(schema, element, qualifier, language, value);
-        modifiedMetadata = true;
+    protected void setMetadataSingleValue(String schema, String element, String qualifier, String language, String value) {
+        if(value != null)
+        {
+            clearMetadata(schema, element, qualifier, language);
+            addMetadata(schema, element, qualifier, language, value);
+            modifiedMetadata = true;
+        }
     }
 
     protected List<DCValue> getMetadata()
@@ -1193,15 +1196,10 @@ public abstract class DSpaceObject
 
         TableRowIterator retrieveMetadata(int resourceId, int resourceTypeId) throws SQLException
         {
-            if (resourceId > 0)
-            {
-                return DatabaseManager.queryTable(ourContext, "MetadataValue",
-                        "SELECT * FROM MetadataValue WHERE resource_id= ? and resource_type_id = ? ORDER BY metadata_field_id, place",
-                        resourceId,
-                        resourceTypeId);
-            }
-
-            return null;
+            return DatabaseManager.queryTable(ourContext, "MetadataValue",
+                    "SELECT * FROM MetadataValue WHERE resource_id= ? and resource_type_id = ? ORDER BY metadata_field_id, place",
+                    resourceId,
+                    resourceTypeId);
         }
     }
 

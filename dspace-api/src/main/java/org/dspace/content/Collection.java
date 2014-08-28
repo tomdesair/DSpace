@@ -294,8 +294,8 @@ public class Collection extends DSpaceObject
     public static Collection[] findAll(Context context) throws SQLException {
         TableRowIterator tri = null;
         try {
-            tri = DatabaseManager.queryTable(context, "collection",
-                    "SELECT * FROM collection c " +
+            tri = DatabaseManager.query(context,
+                    "SELECT c.* FROM collection c " +
                             "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "ORDER BY m.text_value",
                     Constants.COLLECTION,
@@ -355,8 +355,8 @@ public class Collection extends DSpaceObject
     {
         TableRowIterator tri = null;
         try{
-            tri = DatabaseManager.queryTable(context, "collection",
-                    "SELECT * FROM collection c " +
+            tri = DatabaseManager.query(context,
+                    "SELECT c.* FROM collection c " +
                             "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
                             "ORDER BY m.text_value limit ? offset ?",
                     Constants.COLLECTION,
@@ -547,7 +547,7 @@ public class Collection extends DSpaceObject
         }
         else
         {
-            setMetadataFirstValue(MDValue[0], MDValue[1], MDValue[2], null, value);
+            setMetadataSingleValue(MDValue[0], MDValue[1], MDValue[2], null, value);
         }
 
         addDetails(field);
