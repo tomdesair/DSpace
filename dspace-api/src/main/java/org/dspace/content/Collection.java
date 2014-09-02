@@ -294,10 +294,16 @@ public class Collection extends DSpaceObject
     public static Collection[] findAll(Context context) throws SQLException {
         TableRowIterator tri = null;
         try {
+            String query = "SELECT c.* FROM collection c " +
+                    "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) ";
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
+
             tri = DatabaseManager.query(context,
-                    "SELECT c.* FROM collection c " +
-                            "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                            "ORDER BY m.text_value",
+                    query,
                     Constants.COLLECTION,
                     MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID()
             );
@@ -355,10 +361,17 @@ public class Collection extends DSpaceObject
     {
         TableRowIterator tri = null;
         try{
+            String query = "SELECT c.* FROM collection c " +
+                    "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) ";
+
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
+            query += " limit ? offset ?";
             tri = DatabaseManager.query(context,
-                    "SELECT c.* FROM collection c " +
-                            "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                            "ORDER BY m.text_value limit ? offset ?",
+                    query,
                     Constants.COLLECTION,
                     MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                     limit,

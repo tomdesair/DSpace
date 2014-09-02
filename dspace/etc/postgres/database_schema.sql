@@ -178,7 +178,7 @@ CREATE TABLE EPerson
 CREATE INDEX eperson_email_idx ON EPerson(email);
 
 -- index by netid
-CREATE INDEX eperson_netid_idx ON EPerson(netid);
+--CREATE INDEX eperson_netid_idx ON EPerson(netid);
 
 -------------------------------------------------------
 -- EPersonGroup table
@@ -300,7 +300,8 @@ CREATE TABLE MetadataFieldRegistry
 CREATE TABLE MetadataValue
 (
   metadata_value_id  INTEGER PRIMARY KEY DEFAULT NEXTVAL('metadatavalue_seq'),
-  item_id            INTEGER,
+  resource_id        INTEGER NOT NULL,
+  resource_type_id   INTEGER NOT NULL,
   metadata_field_id  INTEGER REFERENCES MetadataFieldRegistry(metadata_field_id),
   text_value         TEXT,
   text_lang          VARCHAR(24),
@@ -311,18 +312,16 @@ CREATE TABLE MetadataValue
 
 -- Create a dcvalue view for backwards compatibilty
 CREATE VIEW dcvalue AS
-  SELECT MetadataValue.metadata_value_id AS "dc_value_id", MetadataValue.item_id,
+  SELECT MetadataValue.metadata_value_id AS "dc_value_id", MetadataValue.resource_id,
     MetadataValue.metadata_field_id AS "dc_type_id", MetadataValue.text_value,
     MetadataValue.text_lang, MetadataValue.place
   FROM MetadataValue, MetadataFieldRegistry
   WHERE MetadataValue.metadata_field_id = MetadataFieldRegistry.metadata_field_id
-  AND MetadataFieldRegistry.metadata_schema_id = 1;
+  AND MetadataFieldRegistry.metadata_schema_id = 1 AND MetadataValue.resource_type_id = 2;
 
 -- An index for item_id - almost all access is based on
 -- instantiating the item object, which grabs all values
 -- related to that item
-CREATE INDEX metadatavalue_item_idx ON MetadataValue(item_id);
-CREATE INDEX metadatavalue_item_idx2 ON MetadataValue(item_id,metadata_field_id);
 CREATE INDEX metadatavalue_field_fk_idx ON MetadataValue(metadata_field_id);
 CREATE INDEX metadatafield_schema_idx ON MetadataFieldRegistry(metadata_schema_id);
   
@@ -622,8 +621,9 @@ CREATE TABLE community_item_count (
 --  and administrators
 -------------------------------------------------------
 -- We don't use getnextid() for 'anonymous' since the sequences start at '1'
-INSERT INTO epersongroup VALUES(0, 'Anonymous');
-INSERT INTO epersongroup VALUES(getnextid('epersongroup'), 'Administrator');
+INSERT INTO epersongroup VALUES(0);
+INSERT INTO epersongroup VALUES(getnextid('epersongroup'));
+
 
 
 -------------------------------------------------------

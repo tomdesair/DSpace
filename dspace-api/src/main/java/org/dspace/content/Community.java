@@ -16,10 +16,7 @@ import org.dspace.authorize.AuthorizeManager;
 import org.dspace.authorize.ResourcePolicy;
 import org.dspace.browse.ItemCountException;
 import org.dspace.browse.ItemCounter;
-import org.dspace.core.Constants;
-import org.dspace.core.Context;
-import org.dspace.core.I18nUtil;
-import org.dspace.core.LogManager;
+import org.dspace.core.*;
 import org.dspace.eperson.Group;
 import org.dspace.event.Event;
 import org.dspace.handle.HandleManager;
@@ -251,10 +248,16 @@ public class Community extends DSpaceObject
     {
         TableRowIterator tri = null;
         try {
+            String query = "SELECT c.* FROM community c " +
+                    "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) ";
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
+
             tri = DatabaseManager.query(context,
-                    "SELECT c.* FROM community c " +
-                            "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                            "ORDER BY m.text_value",
+                    query,
                     Constants.COMMUNITY,
                     MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID()
             );
@@ -315,11 +318,16 @@ public class Community extends DSpaceObject
         // get all communities that are not children
         TableRowIterator tri = null;
         try {
+            String query = "SELECT c.* FROM community c  "
+                    + "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
+                    + "WHERE NOT c.community_id IN (SELECT child_comm_id FROM community2community) ";
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
             tri = DatabaseManager.query(context,
-                    "SELECT c.* FROM community c  "
-                            + "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
-                            + "WHERE NOT c.community_id IN (SELECT child_comm_id FROM community2community) "
-                            + "ORDER BY m.text_value",
+                    query,
                     Constants.COMMUNITY,
                     MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID()
             );
@@ -639,12 +647,17 @@ public class Community extends DSpaceObject
         // Get the table rows
         TableRowIterator tri = null;
         try {
+            String query = "SELECT c.* FROM community2collection c2c, collection c "
+                    + "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
+                    + "WHERE c2c.collection_id=c.collection_id AND c2c.community_id=? ";
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
             tri = DatabaseManager.query(
                     ourContext,
-                    "SELECT c.* FROM community2collection c2c, collection c "
-                            + "JOIN metadatavalue m on (m.resource_id = c.collection_id and m.resource_type_id = ? and m.metadata_field_id = ?) "
-                            + "WHERE c2c.collection_id=c.collection_id AND c2c.community_id=? "
-                            + "ORDER BY m.text_value",
+                    query,
                     Constants.COLLECTION,
                     MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                     getID()
@@ -705,13 +718,19 @@ public class Community extends DSpaceObject
         // Get the table rows
         TableRowIterator tri = null;
         try {
+            String query = "SELECT c.* FROM community2community c2c, community c " +
+                    "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
+                    "WHERE c2c.child_comm_id=c.community_id " +
+                    "AND c2c.parent_comm_id= ? ";
+            if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+                query += " ORDER BY cast(m.text_value as varchar2(128))";
+            }else{
+                query += " ORDER BY m.text_value";
+            }
+
             tri = DatabaseManager.query(
                     ourContext,
-                    "SELECT c.* FROM community2community c2c, community c " +
-                            "JOIN metadatavalue m on (m.resource_id = c.community_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                            "WHERE c2c.child_comm_id=c.community_id " +
-                            "AND c2c.parent_comm_id= ? " +
-                            "ORDER BY m.text_value",
+                    query,
                     Constants.COMMUNITY,
                     MetadataField.findByElement(ourContext, MetadataSchema.find(ourContext, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                     getID()

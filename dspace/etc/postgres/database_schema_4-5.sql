@@ -296,3 +296,17 @@ FROM eperson where not language is null;
 
 
 alter table eperson  drop column firstname, drop column lastname, drop column phone, drop column netid, drop column language;
+
+-- ---------
+-- dcvalue view
+-- ---------
+
+drop view dcvalue;
+
+CREATE VIEW dcvalue AS
+  SELECT MetadataValue.metadata_value_id AS "dc_value_id", MetadataValue.resource_id,
+    MetadataValue.metadata_field_id AS "dc_type_id", MetadataValue.text_value,
+    MetadataValue.text_lang, MetadataValue.place
+  FROM MetadataValue, MetadataFieldRegistry
+  WHERE MetadataValue.metadata_field_id = MetadataFieldRegistry.metadata_field_id
+  AND MetadataFieldRegistry.metadata_schema_id = 1 AND MetadataValue.resource_type_id = 2;

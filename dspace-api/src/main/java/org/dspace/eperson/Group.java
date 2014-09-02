@@ -691,9 +691,16 @@ public class Group extends DSpaceObject
     public static Group findByName(Context context, String name)
             throws SQLException
     {
-        TableRow row = DatabaseManager.querySingle(context, "select * from epersongroup e " +
+        String query = "select * from epersongroup e " +
                 "JOIN metadatavalue m on (m.resource_id = e.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                "where m.text_value = ?",
+                "where ";
+        if("oracle".equals(ConfigurationManager.getProperty("db.name"))) {
+            query += " dbms_lob.substr(m.text_value) = ?";
+        }else{
+            query += " m.text_value = ?";
+
+        }
+        TableRow row = DatabaseManager.querySingle(context, query,
                 Constants.GROUP,
                 MetadataField.findByElement(context, MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(), "title", null).getFieldID(),
                 name
@@ -837,8 +844,15 @@ public class Group extends DSpaceObject
         StringBuffer queryBuf = new StringBuffer();
 		queryBuf.append("SELECT * FROM epersongroup " +
                 "JOIN metadatavalue m on (m.resource_id = epersongroup.eperson_group_id and m.resource_type_id = ? and m.metadata_field_id = ?) " +
-                "WHERE LOWER(m.text_value) LIKE LOWER(?) OR eperson_group_id = ? ORDER BY m.text_value ASC ");
-		
+                "WHERE LOWER(m.text_value) LIKE LOWER(?) OR eperson_group_id = ? ");
+
+        if("oracle".equals(ConfigurationManager.getProperty("db.name"))){
+            queryBuf.append(" ORDER BY cast(m.text_value as varchar2(128))");
+        }else{
+            queryBuf.append(" ORDER BY m.text_value");
+        }
+        queryBuf.append(" ASC");
+
         // Add offset and limit restrictions - Oracle requires special code
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
         {
@@ -1440,5 +1454,28 @@ public class Group extends DSpaceObject
     public void updateLastModified()
     {
 
+    }
+
+    /**
+     * Main script used to set the group names for anonymous group & admin group, only to be called once on DSpace fresh_install
+     * @param args not used
+     * @throws SQLException database exception
+     * @throws AuthorizeException should not occur since we disable authentication for this method.
+     */
+    public static void main(String[] args) throws SQLException, AuthorizeException {
+        Context context = new Context();
+        context.turnOffAuthorisationSystem();
+
+        Group anonymousGroup = Group.find(context, 0);
+        anonymousGroup.setName("Anonymous");
+        anonymousGroup.update();
+
+        Group adminGroup = Group.find(context, 1);
+        adminGroup.setName("Administrator");
+        adminGroup.update();
+
+        //Clear the events to avoid the consumers which aren't needed at this time
+        context.getEvents().clear();
+        context.complete();
     }
 }

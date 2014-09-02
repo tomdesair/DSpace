@@ -283,11 +283,17 @@ public class EPerson extends DSpaceObject
 	{
 		String params = "%"+query.toLowerCase()+"%";
         StringBuffer queryBuf = new StringBuffer();
-        queryBuf.append("SELECT * FROM ( select eperson.*, " +
-                "(select text_value as fn from metadatavalue where resource_id=? and resource_type_id=? and metadata_field_id=?) fn, " +
-                "(select text_value as fn from metadatavalue where resource_id=? and resource_type_id=? and metadata_field_id=?) ln " +
-                "from eperson ) as sub WHERE eperson_id = ? OR " +
-                "LOWER(fn) LIKE LOWER(?) OR LOWER(ln) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) ORDER BY ln, fn ASC ");
+        queryBuf.append("select e.* from eperson e " +
+                " JOIN metadatavalue fn on (resource_id=e.eperson_id AND fn.resource_type_id=? and fn.metadata_field_id=?) " +
+                " JOIN metadatavalue ln on (ln.resource_id=e.eperson_id AND ln.resource_type_id=? and ln.metadata_field_id=?) " +
+                " WHERE e.eperson_id = ? OR " +
+                "LOWER(fn.text_value) LIKE LOWER(?) OR LOWER(ln.text_value) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) ORDER BY  ");
+
+        if("oracle".equals(ConfigurationManager.getProperty("db.name"))) {
+            queryBuf.append(" dbms_lob.substr(ln.text_value), dbms_lob.substr(fn.text_value) ASC");
+        }else{
+            queryBuf.append(" ln.text_value, fn.text_value ASC");
+        }
 
         // Add offset and limit restrictions - Oracle requires special code
         if ("oracle".equals(ConfigurationManager.getProperty("db.name")))
@@ -347,18 +353,18 @@ public class EPerson extends DSpaceObject
         Integer l = MetadataField.findByElement(context, MetadataSchema.find(context, "eperson").getSchemaID(), "lastname", null).getFieldID();
 
         // Create the parameter array, including limit and offset if part of the query
-        Object[] paramArr = new Object[] {int_param,Constants.EPERSON,f, int_param,Constants.EPERSON,l, int_param,params,params,params};
+        Object[] paramArr = new Object[] {Constants.EPERSON,f, Constants.EPERSON,l, int_param,params,params,params};
         if (limit > 0 && offset > 0)
         {
-            paramArr = new Object[]{int_param,Constants.EPERSON,f, int_param,Constants.EPERSON,l, int_param,params,params,params, limit, offset};
+            paramArr = new Object[]{Constants.EPERSON,f, Constants.EPERSON,l, int_param,params,params,params, limit, offset};
         }
         else if (limit > 0)
         {
-            paramArr = new Object[]{int_param,Constants.EPERSON,f, int_param,Constants.EPERSON,l, int_param,params,params,params, limit};
+            paramArr = new Object[]{Constants.EPERSON,f, Constants.EPERSON,l, int_param,params,params,params, limit};
         }
         else if (offset > 0)
         {
-            paramArr = new Object[]{int_param,Constants.EPERSON,f, int_param,Constants.EPERSON,l, int_param,params,params,params, offset};
+            paramArr = new Object[]{Constants.EPERSON,f, Constants.EPERSON,l, int_param,params,params,params, offset};
         }
 
         // Get all the epeople that match the query
