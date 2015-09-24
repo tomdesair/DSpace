@@ -87,5 +87,22 @@
         </xsl:if>
     </xsl:variable>
 
+    <!-- render linked resources using the http:// or https:// scheme depending on dspace.baseUrl -->
+    <xsl:variable name="scheme">
+        <xsl:choose>
+            <xsl:when test="starts-with(confman:getProperty('dspace.baseUrl'), 'https://')">
+                <xsl:text>https://</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>http://</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:variable>
+
+    <!-- item metadata reference -->
+    <xsl:variable name='identifier_doi'
+                  select='//dri:meta/dri:pageMeta/dri:metadata[@element="identifier" and @qualifier="doi"]'/>
+    <xsl:variable name='identifier_handle'
+                  select='//dri:meta/dri:pageMeta/dri:metadata[@element="identifier" and @qualifier="handle"]'/>
 
 </xsl:stylesheet>
