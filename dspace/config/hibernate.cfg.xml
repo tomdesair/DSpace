@@ -37,7 +37,7 @@
 
 
         <!--Debug property that can be used to display the sql-->
-        <property name="show_sql">false</property>
+        <property name="show_sql">true</property>
 
 
         <!--Second level cache configuration-->
@@ -86,6 +86,8 @@
 
         <mapping class="org.dspace.workflowbasic.BasicWorkflowItem"/>
         <mapping class="org.dspace.workflowbasic.TaskListItem"/>
+
+	    <mapping class="org.dspace.content.Bookmark"/>
 
         <!--<mapping class="org.dspace.xmlworkflow.storedcomponents.ClaimedTask"/>-->
         <!--<mapping class="org.dspace.xmlworkflow.storedcomponents.CollectionRole"/>-->

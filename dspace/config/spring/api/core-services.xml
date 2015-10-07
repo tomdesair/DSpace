@@ -106,7 +106,7 @@
     <!--<bean class="org.dspace.xmlworkflow.WorkflowRequirementsServiceImpl"/>-->
     <!--<bean class="org.dspace.xmlworkflow.XmlWorkflowFactoryImpl"/>-->
 
-
+	<bean class="org.dspace.content.BookmarkServiceImpl"/>
 
 
 </beans>
