@@ -1,21 +1,20 @@
 package org.dspace.content;
 
 import org.dspace.eperson.EPerson;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * Created by tim on 06/10/15.
- */
 @Entity
 @Table(name="bookmark")
 public class Bookmark {
-	@Id
-	@Column(name="bookmark_id")
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private UUID id;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid2")
+    @Column(name = "bookmark_id", unique = true, nullable = false, insertable = true, updatable = false)
+    private java.util.UUID uuid;
 
 	@Column(name="title")
 	private String title;
@@ -25,19 +24,22 @@ public class Bookmark {
 	private Date dateCreated;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "creator_id")
+    @JoinColumn(name = "creator")
     private EPerson creator;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "item_id")
+    @JoinColumn(name = "item")
     private Item item;
 
+    protected Bookmark(){
+
+    }
 	public UUID getId() {
-		return id;
+		return uuid;
 	}
 
 	public void setId(UUID id) {
-		this.id = id;
+		this.uuid = id;
 	}
 
 	public String getTitle() {

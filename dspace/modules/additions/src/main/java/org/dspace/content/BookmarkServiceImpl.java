@@ -3,14 +3,14 @@ package org.dspace.content;
 import org.dspace.content.dao.BookmarkDAO;
 import org.dspace.content.service.BookmarkService;
 import org.dspace.core.Context;
+import org.dspace.eperson.EPerson;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Created by tim on 06/10/15.
- */
+
 public class BookmarkServiceImpl implements BookmarkService {
 	@Autowired(required = true)
 	protected BookmarkDAO bookmarkDAO;
@@ -20,12 +20,12 @@ public class BookmarkServiceImpl implements BookmarkService {
 	}
 
 	@Override
-	public Bookmark create(Context context, Bookmark bookmark) throws SQLException {
-		return bookmarkDAO.create(context, bookmark);
+	public Bookmark create(Context context) throws SQLException {
+		return bookmarkDAO.create(context, new Bookmark());
 	}
 
-	@Override
-	public Bookmark read(Context context, int id) throws SQLException {
+    @Override
+	public Bookmark read(Context context, UUID id) throws SQLException {
 		return bookmarkDAO.findByID(context, Bookmark.class, id);
 	}
 
@@ -43,4 +43,14 @@ public class BookmarkServiceImpl implements BookmarkService {
 	public List<Bookmark> findAll(Context context) throws SQLException {
 		return bookmarkDAO.findAll(context, Bookmark.class);
 	}
+
+    @Override
+    public List<Bookmark> findByEperson(Context context, EPerson ePerson) throws SQLException {
+        return bookmarkDAO.findBookmarksByEPerson(context,ePerson);
+    }
+
+    @Override
+    public List<Bookmark> findByItem(Context context, Item i) throws SQLException {
+        return bookmarkDAO.findBookmarksByItem(context,i);
+    }
 }
