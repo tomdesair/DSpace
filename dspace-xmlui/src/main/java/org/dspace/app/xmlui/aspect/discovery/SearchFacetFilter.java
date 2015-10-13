@@ -313,7 +313,7 @@ public class SearchFacetFilter extends AbstractDSpaceTransformer implements Cach
                 String facetField = facetFields.keySet().toArray(new String[facetFields.size()])[0];
                 java.util.List<DiscoverResult.FacetResult> values = facetFields.get(facetField);
 
-                Division results = body.addDivision("browse-by-" + facetField + "-results", "primary");
+                Division results = div.addDivision("browse-by-" + facetField + "-results", "primary");
 
                 if (values != null && 0 < values.size()) {
 
@@ -462,7 +462,7 @@ public class SearchFacetFilter extends AbstractDSpaceTransformer implements Cach
         parameters.putAll(browseParams.getCommonBrowseParams());
         parameters.putAll(browseParams.getControlParameters());
         parameters.put(SearchFilterParam.OFFSET, String.valueOf(offSet + DEFAULT_PAGE_SIZE));
-
+        parameters.put(SearchFilterParam.ORDER, getSortOrder(request).name());
         // Add the filter queries
         String url = generateURL("search-filter", parameters);
         url = addFilterQueriesToUrl(url);
@@ -487,6 +487,7 @@ public class SearchFacetFilter extends AbstractDSpaceTransformer implements Cach
         parameters.putAll(browseParams.getCommonBrowseParams());
         parameters.putAll(browseParams.getControlParameters());
         parameters.put(SearchFilterParam.OFFSET, String.valueOf(offset - DEFAULT_PAGE_SIZE));
+        parameters.put(SearchFilterParam.ORDER, getSortOrder(request).name());
 
         // Add the filter queries
         String url = generateURL("search-filter", parameters);
@@ -534,6 +535,7 @@ public class SearchFacetFilter extends AbstractDSpaceTransformer implements Cach
         /** The browse control params **/
         public static final String OFFSET = "offset";
         public static final String STARTS_WITH = "starts_with";
+        public static final String ORDER = "order";
 
 
         private SearchFilterParam(Request request){
