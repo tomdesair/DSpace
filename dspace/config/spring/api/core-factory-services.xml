@@ -50,5 +50,6 @@
     <!--<bean id="workflowServiceFactory" class="org.dspace.xmlworkflow.factory.XmlWorkflowServiceFactoryImpl"/>-->
 
 
+    <bean id="bookmarkServiceFactory" class="org.dspace.content.bookmark.factory.BookmarkServiceFactoryImpl"/>
 
 </beans>

@@ -1,10 +1,11 @@
-package org.dspace.util;
+package org.dspace.content.bookmark.util;
 
 import org.apache.commons.cli.*;
-import org.dspace.content.Bookmark;
+import org.dspace.content.bookmark.Bookmark;
 import org.dspace.content.Item;
+import org.dspace.content.bookmark.factory.BookmarkServiceFactory;
 import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.BookmarkService;
+import org.dspace.content.bookmark.service.BookmarkService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
@@ -24,7 +25,7 @@ public class BookmarkUpdater {
     protected HandleService handleService;
 
     protected BookmarkUpdater() {
-        bookmarkService = ContentServiceFactory.getInstance().getBookmarkService();
+        bookmarkService = BookmarkServiceFactory.getInstance().getBookmarkService();
         ePersonService = EPersonServiceFactory.getInstance().getEPersonService();
         itemService = ContentServiceFactory.getInstance().getItemService();
         handleService = HandleServiceFactory.getInstance().getHandleService();
@@ -34,6 +35,7 @@ public class BookmarkUpdater {
     public void doUpdate(String epersonMail, Map<String, String> handlesAndTitles) throws SQLException {
         Context ctx = new Context();
         EPerson ePerson = ePersonService.findByEmail(ctx, epersonMail);
+        ctx.setCurrentUser(ePerson);
         for (String key : handlesAndTitles.keySet()) {
             // Don't add invalid objects
             if (handleService.resolveToObject(ctx, key) != null) {
@@ -49,6 +51,8 @@ public class BookmarkUpdater {
         bookmark.setCreator(ePerson);
         bookmark.setItem((Item) handleService.resolveToObject(ctx, handle));
         bookmark.setTitle(title);
+        bookmarkService.update(ctx,bookmark);
+
     }
 
     public static void main(String... args) throws ParseException {
@@ -85,8 +89,8 @@ public class BookmarkUpdater {
         if (line.hasOption('h')) {
             HelpFormatter myhelp = new HelpFormatter();
             myhelp.printHelp("Usages : \n", options);
-            System.out.println("\nAdd a single bookmark based on eperson,handle and possibly a title: org.dspace.util.BookmarkUpdater -e atmirenv@gmail.com -h 123456789/4 -t 'A title'");
-            System.out.println("\nAdd multiple bookmarks to a provided eperson: org.dspace.util.BookmarkUpdater -e atmirenv@gmail.com -m");
+            System.out.println("\nAdd a single bookmark based on eperson,handle and possibly a title: BookmarkUpdater -e atmirenv@gmail.com -i 123456789/4 -t 'A title'");
+            System.out.println("\nAdd multiple bookmarks to a provided eperson: BookmarkUpdater -e atmirenv@gmail.com -m");
             System.out.println("\nAdding the -p option will show all the bookmarks currently associated with the given eperson");
             System.out.println("\nIf the f option has been provided (as well as a handle (i), all bookmarks with this given item will be shown");
             System.out.println("\nIf no options are provided (apart from the required eperson), a fallback to the addition of multiple bookmarks will be used");
@@ -156,9 +160,9 @@ public class BookmarkUpdater {
     public void printBookmarksBasedOnItem(String handle) throws SQLException {
         Context ctx = new Context();
 
-        Item i = (Item) handleService.resolveToObject(ctx, handle);
-        if (i != null) {
-            List<Bookmark> bookMarksByEperson = bookmarkService.findByItem(ctx, i);
+        Item item = (Item) handleService.resolveToObject(ctx, handle);
+        if (item != null) {
+            List<Bookmark> bookMarksByEperson = bookmarkService.findByItem(ctx, item);
             printBookmarks(bookMarksByEperson);
         }
 

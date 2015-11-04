@@ -57,6 +57,6 @@
     <bean class="org.dspace.xmlworkflow.storedcomponents.dao.impl.WorkflowItemRoleDAOImpl"/>
     <bean class="org.dspace.xmlworkflow.storedcomponents.dao.impl.XmlWorkflowItemDAOImpl"/>
 
-	<bean class="org.dspace.content.dao.impl.BookmarkDAOImpl"/>
+	<bean class="org.dspace.content.bookmark.dao.impl.BookmarkDAOImpl"/>
 
 </beans>
