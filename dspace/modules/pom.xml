@@ -44,8 +44,6 @@
                                     WEB-INF/**,META-INF/**
                                 </excludes>
                                 <includeArtifactIds>additions</includeArtifactIds>
-                                <overWriteReleases>true</overWriteReleases>
-                                <overWriteSnapshots>true</overWriteSnapshots>
                                 <outputDirectory>${project.build.directory}/${artifactId}-${project.version}/WEB-INF/classes</outputDirectory>
                             </configuration>
                         </execution>
