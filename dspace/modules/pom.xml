@@ -25,6 +25,37 @@
         <module>additions</module>
     </modules>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!--add custom classes in module 'additions' to WEB-INF/classes to guarantee they are loaded first-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack-additions</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <excludes>
+                                    WEB-INF/**,META-INF/**
+                                </excludes>
+                                <includeArtifactIds>additions</includeArtifactIds>
+                                <overWriteReleases>true</overWriteReleases>
+                                <overWriteSnapshots>true</overWriteSnapshots>
+                                <outputDirectory>${project.build.directory}/${artifactId}-${project.version}/WEB-INF/classes</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
     <!-- 
          List of enabled DSpace "addon" / local customization Modules to build/install.
          To disable building of modules, you can use the Maven '-P' commandline 

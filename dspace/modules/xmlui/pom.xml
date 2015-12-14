@@ -27,6 +27,14 @@
             <filter>${filters.file}</filter>
         </filters>
 
+        <plugins>
+            <!--this plugin inherits its configuration from dspace/modules/pom.xml-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+        </plugins>
+
     </build>
 
     <profiles>
