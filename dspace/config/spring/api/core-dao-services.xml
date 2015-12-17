@@ -11,6 +11,7 @@
     <bean class="org.dspace.app.util.dao.impl.WebAppDAOImpl"/>
 
     <bean class="org.dspace.authorize.dao.impl.ResourcePolicyDAOImpl"/>
+    <bean class="org.dspace.authenticate.dao.impl.PersistentLoginDAOImpl"/>
 
     <bean class="org.dspace.checker.dao.impl.ChecksumHistoryDAOImpl"/>
     <bean class="org.dspace.checker.dao.impl.ChecksumResultDAOImpl"/>

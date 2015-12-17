@@ -41,6 +41,7 @@
         <mapping class="org.dspace.app.util.WebApp"/>
 
         <mapping class="org.dspace.authorize.ResourcePolicy"/>
+        <mapping class="org.dspace.authenticate.PersistentLogin"/>
 
         <mapping class="org.dspace.checker.ChecksumHistory"/>
         <mapping class="org.dspace.checker.ChecksumResult"/>

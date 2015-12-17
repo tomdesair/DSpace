@@ -7,23 +7,27 @@
  */
 package org.dspace.rest;
 
-import java.sql.SQLException;
-import java.util.UUID;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.apache.log4j.Logger;
-import org.dspace.authenticate.AuthenticationMethod;
-import org.dspace.authenticate.factory.AuthenticateServiceFactory;
-import org.dspace.authenticate.service.AuthenticationService;
+import org.dspace.authenticate.PersistentLogin;
+import org.dspace.authenticate.factory.PersistentLoginServiceFactory;
+import org.dspace.authenticate.service.PersistentLoginService;
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.factory.EPersonServiceFactory;
 import org.dspace.eperson.service.EPersonService;
 import org.dspace.rest.common.User;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * This class provide token generation, token holding and logging user into rest
@@ -39,12 +43,12 @@ public class TokenHolder
     private static final Logger log = Logger.getLogger(TokenHolder.class);
 
     public static String TOKEN_HEADER = "rest-dspace-token";
-
+    private static PersistentLoginService persistentLoginService = PersistentLoginServiceFactory.getInstance().getPersistentLoginService();
     /**
      * Collection holding the auth-token, and the corresponding EPerson's UUID
      */
-    private static BiMap<String, UUID> tokenPersons = HashBiMap.create();
-
+    //static InmemoryTokenRepositoryWithUserLookupImpl inMemoryTokenRepository = new InmemoryTokenRepositoryWithUserLookupImpl();
+    //static JdbcTokenRepositoryWithUserLookupImpl jdbcTokenRepositoryWithUserLookup = null;
     /**
      * Login user into rest api. It check user credentials if they are okay.
      * 
@@ -60,7 +64,14 @@ public class TokenHolder
      */
     public static String login(User user) throws WebApplicationException
     {
-        AuthenticationService authenticationService = AuthenticateServiceFactory.getInstance().getAuthenticationService();
+
+        AuthenticationManager am = new DspaceAuthenticationManager();
+        Authentication request = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+
+        Authentication result = am.authenticate(request);
+        SecurityContextHolder.getContext().setAuthentication(result);
+
+
         EPersonService epersonService = EPersonServiceFactory.getInstance().getEPersonService();
 
         org.dspace.core.Context context = null;
@@ -68,32 +79,36 @@ public class TokenHolder
 
         try
         {
-            context = new org.dspace.core.Context();
+            if(result.isAuthenticated()) {
+                context = new org.dspace.core.Context();
 
-            int status = authenticationService.authenticate(context, user.getEmail(), user.getPassword(), null, null);
-            if (status == AuthenticationMethod.SUCCESS)
-            {
+
                 EPerson ePerson = epersonService.findByEmail(context, user.getEmail());
                 synchronized (TokenHolder.class) {
-                    if (tokenPersons.inverse().containsKey(ePerson.getID())) {
-                        token = tokenPersons.inverse().get(ePerson.getID());
-                    } else {
+                    if (persistentLoginService.findByName(context, ePerson.getEmail()) != null && persistentLoginService.findByName(context, ePerson.getEmail()).size() > 0) {
+                        token = persistentLoginService.findByName(context, ePerson.getEmail()).get(0).getToken();
+                    }
+                     else {
                         token = generateToken();
-                        tokenPersons.put(token, ePerson.getID());
+                        PersistentLogin persistentLogin =persistentLoginService.create(context,user.getEmail(),ePerson.getID().toString(),token,new Date());
+
+                        persistentLoginService.update(context,persistentLogin);
+
                     }
                 }
             }
 
-            log.trace("User(" + user.getEmail() + ") has been logged in.");
-            context.complete();
-        }
+                log.trace("User(" + user.getEmail() + ") has been logged in.");
+                context.complete();
+            }
         catch (SQLException e)
         {
             context.abort();
             log.error("Could not read user from database. Message:" + e);
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
-        }
-        finally
+        } catch (AuthorizeException e) {
+            e.printStackTrace();
+        } finally
         {
             if ((context != null) && (context.isValid()))
             {
@@ -116,11 +131,15 @@ public class TokenHolder
      */
     public static synchronized EPerson getEPerson(String token)
     {
+        SecurityContextHolder.getContext();
         try {
             EPersonService epersonService = EPersonServiceFactory.getInstance().getEPersonService();
-            UUID epersonID = tokenPersons.get(token);
             Context context = new Context();
-            return epersonService.find(context, epersonID);
+            List<PersistentLogin> persistentLogins = persistentLoginService.findByToken(context, token);
+            if (persistentLogins.size() > 0) {
+                return epersonService.findByEmail(context, persistentLogins.get(0).getUsername());
+            }
+            return null;
         } catch (SQLException e) {
             log.error(e);
             return null;
@@ -136,16 +155,27 @@ public class TokenHolder
      */
     public static synchronized boolean logout(String token)
     {
-        if ((token == null) || (! tokenPersons.containsKey(token)))
+
+        if ((token == null))
         {
             return false;
         }
 
-        UUID personID = tokenPersons.remove(token);
-        if (personID == null)
-        {
+        Context context = new Context();
+        try {
+            persistentLoginService.delete(context, (PersistentLogin) persistentLoginService.findByToken(context, token));
+        } catch (SQLException e) {
+            log.error(e);
             return false;
+        } catch (AuthorizeException e) {
+           log.error(e);
+            return false;
+        }finally {
+            if(context!=null){
+                context.abort();
+            }
         }
+
         return true;
     }
 
@@ -158,5 +188,18 @@ public class TokenHolder
     {
         return UUID.randomUUID().toString();
     }
+   /* private static JdbcTokenRepositoryWithUserLookupImpl getJdbcTokenRepositoryWithUserLookup(){
+        if(jdbcTokenRepositoryWithUserLookup==null){
+            jdbcTokenRepositoryWithUserLookup= new JdbcTokenRepositoryWithUserLookupImpl();
+            BasicDataSource ds = new BasicDataSource();
+            ds.setDriverClassName("org.postgresql.Driver");
+            ds.setUrl("jdbc:postgresql://localhost:5434/dspace");
+            ds.setUsername("dspace");
+            ds.setPassword("dspace");
+            jdbcTokenRepositoryWithUserLookup.setDataSource(ds);
+        }
+        return jdbcTokenRepositoryWithUserLookup;
+    }*/
 
 }
+

@@ -17,10 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 
 import org.apache.log4j.Logger;
 import org.dspace.eperson.EPerson;
@@ -29,6 +26,10 @@ import org.dspace.eperson.service.EPersonService;
 import org.dspace.rest.common.Status;
 import org.dspace.rest.common.User;
 import org.dspace.rest.exceptions.ContextException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Root of RESTful api. It provides login and logout. Also have method for
@@ -152,7 +153,7 @@ public class RestIndex {
             return Response.status(Response.Status.FORBIDDEN).build();
         } else {
             log.info("REST Login Success for user: " + user.getEmail());
-            return Response.ok(token, "text/plain").build();
+            return Response.ok(token, "text/plain").cookie(new NewCookie(TokenHolder.TOKEN_HEADER, token, null, null, null, 600, false)).build();
         }
     }
 

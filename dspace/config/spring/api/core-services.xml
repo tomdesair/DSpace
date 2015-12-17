@@ -24,6 +24,7 @@
     <bean class="org.dspace.app.util.WebAppServiceImpl"/>
 
     <bean class="org.dspace.authenticate.AuthenticationServiceImpl"/>
+    <bean class="org.dspace.authenticate.PersistentLoginServiceImpl"/>
 
     <bean class="org.dspace.authorize.AuthorizeServiceImpl"/>
     <bean class="org.dspace.authorize.ResourcePolicyServiceImpl"/>

@@ -7,12 +7,14 @@
  */
 package org.dspace.rest;
 
+import java.net.CookieHandler;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
@@ -227,18 +229,18 @@ public class Resource
      * "rest-dspace-token".
      * 
      * @param headers
-     *            Only must have "rest-api-token" for successfull return of
+     *            Only must have "rest-api-token" for successful return of
      *            user.
      * @return Return EPerson logged under token in headers. If token was wrong
      *         or header rest-dspace-token was missing, returns null.
      */
     protected static EPerson getUser(HttpHeaders headers)
     {
-        List<String> list = headers.getRequestHeader(TokenHolder.TOKEN_HEADER);
+        Cookie cookie = headers.getCookies().get(TokenHolder.TOKEN_HEADER);
         String token = null;
-        if ((list != null) && (list.size() > 0))
+        if (cookie != null)
         {
-            token = list.get(0);
+            token = cookie.getValue();
             return TokenHolder.getEPerson(token);
         }
         return null;

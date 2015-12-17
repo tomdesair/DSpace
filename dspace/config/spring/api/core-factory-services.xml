@@ -17,6 +17,7 @@
 
 
     <bean id="authenticateServiceFactory" class="org.dspace.authenticate.factory.AuthenticateServiceFactoryImpl"/>
+    <bean id="persistentLoginServiceFactory" class="org.dspace.authenticate.factory.PersistentLoginServiceFactoryImpl"/>
 
     <bean id="authorityServiceFactory" class="org.dspace.authority.factory.AuthorityServiceFactoryImpl"/>
     <bean id="contentAuthorityServiceFactory" class="org.dspace.content.authority.factory.ContentAuthorityServiceFactoryImpl"/>

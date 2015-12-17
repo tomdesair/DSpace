@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+    <bean class="org.dspace.rest.DSpaceAuthenticationProvider" id="dSpaceAuthenticationProvider" lazy-init="true" />
+
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider ref='dSpaceAuthenticationProvider'/>
+    </security:authentication-manager>
+
+    <security:http>
+        <security:remember-me data-source-ref="dataSource"/>
+    </security:http>
+
+    <!-- TODO: Use import to reference core-hibernate.xml file and use that dataSource (it's the same)-->
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" lazy-init="true" destroy-method="close">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+        <property name="maxWaitMillis" value="${db.maxwait}"/>
+        <property name="maxIdle" value="${db.maxidle}"/>
+        <property name="maxTotal" value="${db.maxconnections}"/>
+    </bean>
+</beans>
