@@ -18,6 +18,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.content.DSpaceObject;
 import org.dspace.core.ConfigurationManager;
@@ -237,11 +238,15 @@ public class Resource
     protected static EPerson getUser(HttpHeaders headers)
     {
         Cookie cookie = headers.getCookies().get(TokenHolder.TOKEN_HEADER);
+        List<String> headerToken = headers.getRequestHeader(TokenHolder.TOKEN_HEADER);
         String token = null;
         if (cookie != null)
         {
             token = cookie.getValue();
             return TokenHolder.getEPerson(token);
+        }
+        if(headerToken.size()>0 && StringUtils.isNotBlank(headerToken.get(0))){
+            return TokenHolder.getEPerson(headerToken.get(0));
         }
         return null;
     }
