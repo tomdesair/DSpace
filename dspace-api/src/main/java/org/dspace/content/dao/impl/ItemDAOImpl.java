@@ -29,6 +29,13 @@ import java.util.Iterator;
  * @author kevinvandevelde at atmire.com
  */
 public class ItemDAOImpl extends AbstractHibernateDSODAO<Item> implements ItemDAO {
+
+    @Override
+    public Iterator<Item> findAll(Context context) throws SQLException {
+        Query query = createQuery(context, "FROM Item ");
+        return iterate(query);
+    }
+
     @Override
     public Iterator<Item> findAll(Context context, boolean archived) throws SQLException {
         Query query = createQuery(context, "FROM Item WHERE inArchive= :in_archive");
