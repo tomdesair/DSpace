@@ -15,7 +15,6 @@ import org.dspace.content.dao.BitstreamDAO;
 import org.dspace.core.AbstractHibernateDSODAO;
 import org.dspace.core.Context;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 
 import java.sql.SQLException;
@@ -73,34 +72,17 @@ public class BitstreamDAOImpl extends AbstractHibernateDSODAO<Bitstream> impleme
 
     @Override
     public Iterator<Bitstream> findByCollection(Context context, Collection collection) throws SQLException {
-        Query query = createQuery(context, "select b from Bitstream b " +
-                "join b.bundles bitBundles " +
-                "join bitBundles.items item " +
-                "join item.collections c " +
-                "WHERE :collection IN c");
-
-        query.setParameter("collection", collection);
-
-        return iterate(query);
+        return iterateOverNamedQuery(context, "Bitstream.findByCollection", singleParam("collection", collection));
     }
 
     @Override
     public Iterator<Bitstream> findByItem(Context context, Item item) throws SQLException {
-        Query query = createQuery(context, "select b from Bitstream b " +
-                "join b.bundles bitBundles " +
-                "join bitBundles.items item " +
-                "WHERE :item IN item");
-
-        query.setParameter("item", item);
-
-        return iterate(query);
+        return iterateOverNamedQuery(context, "Bitstream.findByItem", singleParam("item", item));
     }
 
     @Override
     public Iterator<Bitstream> findByStoreNumber(Context context, Integer storeNumber) throws SQLException {
-        Query query = createQuery(context, "select b from Bitstream b where b.storeNumber = :storeNumber");
-        query.setParameter("storeNumber", storeNumber);
-        return iterate(query);
+        return iterateOverNamedQuery(context, "Bitstream.findByStoreNumber", singleParam("storeNumber", storeNumber));
     }
 
     @Override

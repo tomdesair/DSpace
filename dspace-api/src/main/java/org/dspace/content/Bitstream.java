@@ -40,7 +40,20 @@ import java.util.List;
                     "join bitBundles.items item " +
                     "join item.collections itemColl " +
                     "join itemColl.communities community " +
-                    "WHERE :community IN (community) ")
+                    "WHERE :community IN (community) "),
+        @NamedQuery(name = "Bitstream.findByCollection",
+            query = "select b from Bitstream b " +
+                    "join b.bundles bitBundles " +
+                    "join bitBundles.items item " +
+                    "join item.collections c " +
+                    "WHERE :collection IN (c) "),
+        @NamedQuery(name = "Bitstream.findByItem",
+            query = "select b from Bitstream b " +
+                    "join b.bundles bitBundles " +
+                    "join bitBundles.items item " +
+                    "WHERE :item IN (item) "),
+        @NamedQuery(name = "Bitstream.findByStoreNumber",
+            query = "select b from Bitstream b where b.storeNumber = :storeNumber")
 })
 public class Bitstream extends DSpaceObject implements DSpaceObjectLegacySupport
 {
