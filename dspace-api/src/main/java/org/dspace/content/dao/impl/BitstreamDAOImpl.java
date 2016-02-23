@@ -63,22 +63,12 @@ public class BitstreamDAOImpl extends AbstractHibernateDSODAO<Bitstream> impleme
 //                    + "where not exists( select 'x' from most_recent_checksum "
 //                    + "where most_recent_checksum.bitstream_id = bitstream.bitstream_id )"
 
-        Query query = createQuery(context, "select b from Bitstream b where b not in (select c.bitstream from MostRecentChecksum c)");
-        return query.list();
+        return executeNamedQuery(context, "Bitstream.findBitstreamsWithNoRecentChecksum");
     }
 
     @Override
     public Iterator<Bitstream> findByCommunity(Context context, Community community) throws SQLException {
-        Query query = createQuery(context, "select b from Bitstream b " +
-                "join b.bundles bitBundles " +
-                "join bitBundles.items item " +
-                "join item.collections itemColl " +
-                "join itemColl.communities community " +
-                "WHERE :community IN community");
-
-        query.setParameter("community", community);
-
-        return iterate(query);
+        return iterateOverNamedQuery(context, "Bitstream.findByCommunity", singleParam("community", community));
     }
 
     @Override

@@ -7,11 +7,6 @@
  */
 package org.dspace.content;
 
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.core.Constants;
@@ -19,6 +14,10 @@ import org.dspace.core.Context;
 import org.hibernate.proxy.HibernateProxyHelper;
 
 import javax.persistence.*;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class representing bitstreams stored in the DSpace system.
@@ -32,6 +31,17 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="bitstream")
+@NamedQueries({
+        @NamedQuery(name = "Bitstream.findBitstreamsWithNoRecentChecksum",
+            query = "select b from Bitstream b where b not in (select c.bitstream from MostRecentChecksum c)"),
+        @NamedQuery(name = "Bitstream.findByCommunity",
+            query = "select b from Bitstream b " +
+                    "join b.bundles bitBundles " +
+                    "join bitBundles.items item " +
+                    "join item.collections itemColl " +
+                    "join itemColl.communities community " +
+                    "WHERE :community IN (community) ")
+})
 public class Bitstream extends DSpaceObject implements DSpaceObjectLegacySupport
 {
     @Column(name="bitstream_id", insertable = false, updatable = false)

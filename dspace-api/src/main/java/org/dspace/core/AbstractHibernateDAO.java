@@ -8,13 +8,14 @@
 package org.dspace.core;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.hibernate.*;
+import org.apache.commons.collections.MapUtils;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Hibernate implementation for generic DAO interface.  Also includes additional
@@ -108,6 +109,34 @@ public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
         return getHibernateSession(context).createQuery(query);
     }
 
+    public Query prepareNamedQuery(Context context, String queryName) throws SQLException {
+        return prepareNamedQuery(context, queryName, null);
+    }
+
+    public Query prepareNamedQuery(Context context, String queryName, final Map<String, Object> parameters) throws SQLException {
+        Query query = getHibernateSession(context).getNamedQuery(queryName);
+
+        if(MapUtils.isNotEmpty(parameters)) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return query;
+    }
+
+    public List<T> executeNamedQuery(final Context context, final String queryName) throws SQLException {
+        return executeNamedQuery(context, queryName, null);
+    }
+
+    public List<T> executeNamedQuery(final Context context, final String queryName, final Map<String, Object> parameters) throws SQLException {
+        Query query = prepareNamedQuery(context, queryName, parameters);
+
+        @SuppressWarnings("unchecked")
+        List<T> result = query.list();
+        return result;
+    }
+
     public List<T> list(Criteria criteria)
     {
         @SuppressWarnings("unchecked")
@@ -168,6 +197,14 @@ public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
         return result;
     }
 
+    public Iterator<T> iterateOverNamedQuery(final Context context, final String queryName, final Map<String, Object> params) throws SQLException {
+        Query query = prepareNamedQuery(context, queryName, params);
+
+        @SuppressWarnings("unchecked")
+        Iterator<T> result = (Iterator<T>) query.iterate();
+        return result;
+    }
+
     public int count(Criteria criteria)
     {
         return ((Long) criteria.setProjection(Projections.rowCount()).uniqueResult()).intValue();
@@ -182,4 +219,11 @@ public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
     {
         return (Long) criteria.setProjection(Projections.rowCount()).uniqueResult();
     }
+
+    protected Map<String, Object> singleParam(final String key, final Object value) {
+        Map<String, Object>  result = new HashMap<>();
+        result.put(key, value);
+        return result;
+    }
+
 }
