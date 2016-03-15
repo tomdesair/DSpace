@@ -77,6 +77,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     protected IdentifierService identifierService;
     @Autowired(required = true)
     protected VersioningService versioningService;
+    @Autowired(required=true)
+    protected HarvestedItemService harvestedItemService;
 
     protected ItemServiceImpl()
     {
@@ -582,11 +584,12 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     public void delete(Context context, Item item) throws SQLException, AuthorizeException, IOException {
 
         // Also delete the item if it appears in a harvested collection.
-
-        HarvestedItemService harvestedItemService = HarvestServiceFactory.getInstance().getHarvestedItemService(); // autowire this.
         HarvestedItem hi = harvestedItemService.find(context, item);
-        harvestedItemService.delete(context,hi);
 
+        if(hi!=null)
+        {
+            harvestedItemService.delete(context, hi);
+        }
 
         authorizeService.authorizeAction(context, item, Constants.REMOVE);
         item.getCollections().clear();
