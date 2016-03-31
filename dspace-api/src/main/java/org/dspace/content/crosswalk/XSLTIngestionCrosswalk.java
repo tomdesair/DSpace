@@ -7,21 +7,10 @@
  */
 package org.dspace.content.crosswalk;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.DSpaceObject;
-import org.dspace.content.Collection;
-import org.dspace.content.Community;
-import org.dspace.content.Item;
-import org.dspace.content.MetadataField;
-import org.dspace.content.MetadataSchema;
+import org.dspace.content.*;
 import org.dspace.content.authority.Choices;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.packager.PackageUtils;
@@ -38,6 +27,12 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.transform.XSLTransformException;
 import org.jdom.transform.XSLTransformer;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Configurable XSLT-driven ingestion Crosswalk
@@ -99,7 +94,8 @@ public class XSLTIngestionCrosswalk
         String authority = field.getAttributeValue("authority");
         String sconf = field.getAttributeValue("confidence");
 
-        CrosswalkUtils.checkMetadata(context, schema, element, qualifier, createMissingMetadataFields);
+        CrosswalkMetadataValidator metadataValidator = new CrosswalkMetadataValidator();
+        MetadataField metadataField = metadataValidator.checkMetadata(context, schema, element, qualifier, createMissingMetadataFields);
         // sanity check: some XSL puts an empty string in qualifier,
         // change it to null so we match the unqualified DC field:
         if (qualifier != null && qualifier.equals(""))
@@ -112,11 +108,11 @@ public class XSLTIngestionCrosswalk
         {
             int confidence = (sconf != null && sconf.length() > 0) ?
                     Choices.getConfidenceValue(sconf) : Choices.CF_UNSET;
-            itemService.addMetadata(context, item, schema, element, qualifier, lang, field.getText(), authority, confidence);
+            itemService.addMetadata(context, item, metadataField, lang, field.getText(), authority, confidence);
         }
         else
         {
-            itemService.addMetadata(context, item, schema, element, qualifier, lang, field.getText());
+            itemService.addMetadata(context, item, metadataField, lang, field.getText());
         }
     }
 
