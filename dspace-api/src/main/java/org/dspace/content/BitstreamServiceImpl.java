@@ -253,8 +253,6 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
         // Remove policies
         authorizeService.removeAllPolicies(context, bitstream);
 
-        deleteMetadata(context, bitstream);
-
         // Remove bitstream itself
         bitstream.setDeleted(true);
         update(context, bitstream);
