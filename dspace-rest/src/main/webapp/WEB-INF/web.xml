@@ -50,7 +50,7 @@
 
     <servlet-mapping>
         <servlet-name>DSpace REST API</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/v1/*</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
